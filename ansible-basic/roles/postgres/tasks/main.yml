@@ -1,0 +1,62 @@
+---
+- name: Install PostgreSQL
+  ansible.builtin.apt:
+    name:
+      - postgresql
+      - python3-psycopg2      # needed by the postgresql_* modules
+      - acl                   # needed for become_user: postgres
+    state: present
+    update_cache: true
+
+- name: Ensure PostgreSQL is running
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
+
+- name: Create the database
+  become_user: postgres
+  community.postgresql.postgresql_db:
+    name: "{{ db_name }}"
+    state: present
+
+- name: Create the images table
+  become_user: postgres
+  community.postgresql.postgresql_query:
+    db: "{{ db_name }}"
+    query: |
+      CREATE TABLE IF NOT EXISTS images (
+        name text PRIMARY KEY,
+        data bytea NOT NULL
+      )
+  changed_when: false
+
+- name: Make a place PostgreSQL can read the image from
+  ansible.builtin.file:
+    path: /var/lib/postgresql/seed
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: "0750"
+
+- name: Upload the image to the Pi
+  ansible.builtin.copy:
+    src: "{{ image_file }}"
+    dest: "/var/lib/postgresql/seed/{{ image_file }}"
+    owner: postgres
+    group: postgres
+    mode: "0640"
+
+- name: Store the image in PostgreSQL
+  become_user: postgres
+  community.postgresql.postgresql_query:
+    db: "{{ db_name }}"
+    query: |
+      INSERT INTO images (name, data)
+      VALUES (%(n)s, pg_read_binary_file(%(p)s))
+      ON CONFLICT (name) DO UPDATE SET data = EXCLUDED.data
+      WHERE images.data IS DISTINCT FROM EXCLUDED.data
+    named_args:
+      n: "{{ image_name }}"
+      p: "/var/lib/postgresql/seed/{{ image_file }}"
+

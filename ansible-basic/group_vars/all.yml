@@ -1,0 +1,9 @@
+---
+db_name: webapp
+image_name: logo
+image_file: logo.png
+
+web_root: /var/www/html
+web_port: 3000
+web_message: "This server is handled by Ansible"
+

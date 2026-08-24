@@ -1,0 +1,17 @@
+---
+all:
+  children:
+    webservers:
+      hosts:
+        jamen:
+          ansible_host: 100.94.232.78    
+        web2:
+          ansible_host: 192.168.1.51     
+        web3:
+          ansible_host: 192.168.1.52     
+    dbservers:
+      hosts:
+        jamen:                              
+  vars:
+    ansible_user: jamen                    
+

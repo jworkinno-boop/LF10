@@ -1,0 +1,56 @@
+---
+- name: Install nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+    update_cache: true
+
+- name: Configure the site to listen on {{ web_port }}
+  ansible.builtin.template:
+    src: default.j2
+    dest: /etc/nginx/sites-available/default
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Ensure nginx is running
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+
+- name: Deploy the page
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: "{{ web_root }}/index.html"
+    mode: "0644"
+  notify: Reload nginx
+
+# --- pull the image back out of PostgreSQL ------------------------------
+- name: Export the image from the database to a temp file
+  become_user: postgres
+  ansible.builtin.shell: |
+    set -o pipefail
+    psql -d {{ db_name }} -tAq \
+      -c "SELECT encode(data, 'base64') FROM images WHERE name = '{{ image_name }}'" \
+      | base64 -d > /tmp/{{ image_file }}
+  args:
+    executable: /bin/bash
+  delegate_to: "{{ groups['dbservers'][0] }}"
+  run_once: true
+  changed_when: false
+
+- name: Copy it to the control node
+  ansible.builtin.fetch:
+    src: "/tmp/{{ image_file }}"
+    dest: "/tmp/ansible-{{ image_file }}"
+    flat: true
+  delegate_to: "{{ groups['dbservers'][0] }}"
+  run_once: true
+  changed_when: false
+
+- name: Publish it in the web root
+  ansible.builtin.copy:
+    src: "/tmp/ansible-{{ image_file }}"
+    dest: "{{ web_root }}/{{ image_file }}"
+    mode: "0644"
+

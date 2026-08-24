@@ -1,0 +1,11 @@
+---
+- name: Database
+  hosts: dbservers
+  roles:
+    - postgres
+
+- name: Web
+  hosts: webservers
+  roles:
+    - nginx
+
