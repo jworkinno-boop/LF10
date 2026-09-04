@@ -1,0 +1,33 @@
+services:
+  safesend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: safesend:local
+    container_name: safesend
+    ports:
+      - "3100:3100"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3100/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # Optional hot-reloading dev server on the same port:
+  #   docker compose --profile dev up safesend-dev
+  safesend-dev:
+    profiles: ["dev"]
+    image: node:20-alpine
+    container_name: safesend-dev
+    working_dir: /app
+    command: sh -c "npm ci && npm run dev"
+    ports:
+      - "3100:3100"
+    volumes:
+      - .:/app
+      - safesend-node-modules:/app/node_modules
+
+volumes:
+  safesend-node-modules:

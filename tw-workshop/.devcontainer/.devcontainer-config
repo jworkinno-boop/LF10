@@ -1,0 +1,2 @@
+repo:git@gitlab.innogames.de:ai-taskforce/devcontainer-base.git
+overlay:git@gitlab.innogames.de:ai-taskforce/claude-code-enterprise-settings.git

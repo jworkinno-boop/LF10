@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-slate-100 text-slate-900 antialiased;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* The demo banner is sticky. Without this, SC 2.4.11 (Focus Not Obscured)
+     fails as soon as anything is scrolled into view behind it. */
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [tabindex]:not([tabindex='-1']) {
+    scroll-margin-top: 7rem;
+    scroll-margin-bottom: 2rem;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-4 ring-blue-700 ring-offset-2 ring-offset-white rounded-sm;
+  }
+
+  h1, h2, h3 {
+    @apply font-semibold tracking-tight;
+    line-height: 1.25;
+  }
+}
+
+@layer components {
+  /* Margaret's screens: larger base type, single column at every width. */
+  .simple-mode {
+    font-size: 18px;
+  }
+  .simple-mode h1 {
+    @apply text-3xl sm:text-4xl;
+  }
+  .simple-mode h2 {
+    @apply text-2xl;
+  }
+  .simple-mode p,
+  .simple-mode li,
+  .simple-mode label {
+    @apply text-lg;
+  }
+
+  .standard-mode {
+    font-size: 16px;
+  }
+  .standard-mode h1 {
+    @apply text-2xl sm:text-3xl;
+  }
+  .standard-mode h2 {
+    @apply text-xl;
+  }
+
+  .card {
+    @apply rounded-xl border border-slate-300 bg-white p-5 shadow-sm;
+  }
+
+  /* 48x48 minimum target, 16px between primary actions. */
+  .btn {
+    @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-lg
+           border-2 px-5 py-3 font-semibold transition-colors;
+  }
+  .btn-primary {
+    @apply btn border-blue-800 bg-blue-800 text-white hover:bg-blue-900;
+  }
+  .btn-secondary {
+    @apply btn border-slate-400 bg-white text-slate-900 hover:bg-slate-100;
+  }
+  .btn-danger {
+    @apply btn border-red-800 bg-white text-red-900 hover:bg-red-50;
+  }
+  .btn-huge {
+    @apply btn min-h-[72px] w-full border-blue-800 bg-blue-800 px-6 text-xl text-white
+           hover:bg-blue-900 sm:text-2xl;
+  }
+
+  .field {
+    @apply w-full min-h-[48px] rounded-lg border-2 border-slate-400 bg-white px-4 py-3
+           text-lg text-slate-900 placeholder:text-slate-500;
+  }
+
+  .chip {
+    @apply inline-flex min-h-[48px] items-center rounded-full border-2 px-4 py-2 text-base font-medium;
+  }
+
+  .link {
+    @apply font-semibold text-blue-800 underline underline-offset-4 hover:text-blue-900;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
