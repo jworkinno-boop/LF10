@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { reducer } from '../state/reducer';
 import { seedState } from './seed';
 import { SCENARIOS } from './scenarios';
+import { openForSender, pendingForApprover } from '../state/selectors';
 import { DEMO_NOW, parse } from '../clock';
 import type { AppState, RiskBand, TransferState } from '../types';
 
@@ -19,7 +20,10 @@ function submit(state: AppState) {
   return { state: next, transfer: next.transfers[next.transfers.length - 1] };
 }
 
-const EXPECTED: Record<string, { band: RiskBand; state: TransferState; rules?: string[] }> = {
+const EXPECTED: Record<
+  string,
+  { band: RiskBand; state: TransferState; rules?: string[]; seeded?: true }
+> = {
   normal_bill: { band: 'LOW', state: 'SENT' },
   large_legitimate: { band: 'MEDIUM', state: 'PENDING_APPROVAL' },
   new_payee_legitimate: { band: 'MEDIUM', state: 'PENDING_APPROVAL' },
@@ -29,6 +33,8 @@ const EXPECTED: Record<string, { band: RiskBand; state: TransferState; rules?: s
   splitting: { band: 'MEDIUM', state: 'PENDING_APPROVAL', rules: ['R04', 'R09', 'R18'] },
   tech_support: { band: 'CRITICAL', state: 'PENDING_APPROVAL' },
   resubmission: { band: 'HIGH', state: 'PENDING_APPROVAL', rules: ['R19'] },
+  // Seeded rather than drafted: it is already waiting when the demo opens.
+  awaiting_approval: { band: 'MEDIUM', state: 'PENDING_APPROVAL', seeded: true },
 };
 
 describe('seeded scenarios', () => {
@@ -39,10 +45,19 @@ describe('seeded scenarios', () => {
   for (const scenario of SCENARIOS) {
     it(`${scenario.title} behaves as the demo panel promises`, () => {
       const loaded = load(scenario.id);
-      expect(loaded.draft?.step).toBe(5);
-
-      const { transfer } = submit(loaded);
       const expected = EXPECTED[scenario.id];
+
+      // A seeded scenario needs no wizard: the transfer is already there.
+      const transfer = expected.seeded
+        ? (() => {
+            expect(loaded.draft).toBeNull();
+            expect(loaded.transfers).toHaveLength(1);
+            return loaded.transfers[0];
+          })()
+        : (() => {
+            expect(loaded.draft?.step).toBe(5);
+            return submit(loaded).transfer;
+          })();
       expect(transfer.risk.band).toBe(expected.band);
       expect(transfer.state).toBe(expected.state);
 
@@ -80,6 +95,23 @@ describe('seeded scenarios', () => {
 
     const { transfer } = submit(loaded);
     expect(transfer.state).toBe('PENDING_APPROVAL');
+  });
+
+  it('opens with a payment already waiting for the approver', () => {
+    const loaded = load('awaiting_approval');
+    expect(loaded.draft).toBeNull();
+
+    const waiting = openForSender(loaded);
+    expect(waiting).toHaveLength(1);
+    expect(waiting[0].state).toBe('PENDING_APPROVAL');
+    // The home card and the expiry countdown both need this.
+    expect(waiting[0].expiresAt).toBeTruthy();
+
+    // It is in David's queue, and he was told about it.
+    expect(pendingForApprover(loaded)).toHaveLength(1);
+    expect(
+      loaded.notifications.filter((n) => n.toPersona === 'david' && !n.readAt),
+    ).toHaveLength(1);
   });
 
   it('keeps the prior reason text for the resubmission diff', () => {

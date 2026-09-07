@@ -11,6 +11,24 @@ export function formatMoney(cents: number): string {
   return money.format(cents / 100);
 }
 
+/**
+ * A settings value as it should read in the audit log.
+ *
+ * The audit trail is a record a person reads, so it stores the rendered string,
+ * not the raw one. Without this the log showed a checking amount going
+ * "10000 -> 50000" instead of "€100.00 -> €500.00", and booleans as
+ * "true"/"false".
+ *
+ * Money fields are named by their `Cents` suffix, which is the same convention
+ * the Settings type uses, so a new money setting is covered automatically.
+ */
+export function formatSettingsValue(field: string, value: unknown): string {
+  if (typeof value === 'number' && field.endsWith('Cents')) return formatMoney(value);
+  if (typeof value === 'boolean') return value ? 'on' : 'off';
+  if (value === null || value === undefined) return '—';
+  return String(value);
+}
+
 const dateFmt = new Intl.DateTimeFormat(CONFIG.locale, {
   timeZone: CONFIG.timeZone,
   day: 'numeric',

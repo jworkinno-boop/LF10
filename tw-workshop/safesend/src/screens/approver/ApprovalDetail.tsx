@@ -60,11 +60,11 @@ export function ApprovalDetail() {
         <section className="card">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-sm text-slate-700">Reference {transfer.id}</p>
+              <p className="text-sm text-ink-2">Reference {transfer.id}</p>
               <h2 className="text-2xl">
                 <Money cents={transfer.amountCents} /> to {transfer.payee.displayName}
               </h2>
-              <p className="text-sm text-slate-700">
+              <p className="text-sm text-ink-2">
                 Requested {formatDateTime(transfer.createdAt)}
                 {transfer.expiresAt ? ` · expires ${formatDateTime(transfer.expiresAt)}` : ''}
               </p>
@@ -103,10 +103,10 @@ export function ApprovalDetail() {
 
         <section className="card">
           <h2 className="text-xl">Her stated reason, word for word</h2>
-          <blockquote className="mt-2 border-l-4 border-slate-400 pl-4 text-lg">
+          <blockquote className="mt-2 border-l-4 border-rule-2 pl-4 text-lg">
             “{transfer.reasonText}”
           </blockquote>
-          <p className="mt-2 text-sm text-slate-700">
+          <p className="mt-2 text-sm text-ink-2">
             Category: {COPY.categories[transfer.reasonCategory]}
           </p>
 
@@ -130,11 +130,11 @@ export function ApprovalDetail() {
         </section>
 
         {priorRejection ? (
-          <section className="rounded-xl border-2 border-orange-700 bg-orange-50 p-5">
-            <h2 className="text-xl font-bold text-orange-950">
+          <section className="card-high">
+            <h2 className="text-xl font-bold text-ink">
               You already stopped a payment to this account
             </h2>
-            <p className="mt-1 text-orange-950">
+            <p className="mt-1 text-ink">
               {formatDateTime(priorRejection.approval!.decidedAt)} — “
               {priorRejection.approval?.rejectionReason}”
               {priorRejection.approval?.note ? ` (${priorRejection.approval.note})` : ''}
@@ -146,14 +146,14 @@ export function ApprovalDetail() {
         ) : null}
 
         {transfer.priorRisk ? (
-          <section className="rounded-xl border-2 border-amber-600 bg-amber-50 p-4">
-            <h2 className="text-lg font-bold text-amber-950">Re-checked after her reply</h2>
-            <p className="mt-1 text-amber-950">
+          <section className="rounded-card border-2 border-attend-border bg-attend-bg p-4">
+            <h2 className="text-lg font-bold text-ink">Re-checked after her reply</h2>
+            <p className="mt-1 text-ink">
               Before: {transfer.priorRisk.band} ({transfer.priorRisk.score}/100). After:{' '}
               {transfer.risk.band} ({transfer.risk.score}/100).
             </p>
             {transfer.infoRequest?.answer ? (
-              <p className="mt-2 text-amber-950">Her reply: “{transfer.infoRequest.answer}”</p>
+              <p className="mt-2 text-ink">Her reply: “{transfer.infoRequest.answer}”</p>
             ) : null}
           </section>
         ) : null}
@@ -171,9 +171,9 @@ export function ApprovalDetail() {
           <ul className="mt-3 space-y-2">
             {pattern.map((bucket) => (
               <li key={bucket.label} className="flex items-center gap-3">
-                <span className="w-36 shrink-0 text-sm text-slate-700">{bucket.label}</span>
+                <span className="w-36 shrink-0 text-sm text-ink-2">{bucket.label}</span>
                 <span
-                  className="h-5 rounded bg-blue-800"
+                  className="h-5 rounded bg-link"
                   style={{ width: `${Math.round((bucket.total / maxBar) * 100)}%` }}
                   aria-hidden="true"
                 />
@@ -202,14 +202,14 @@ export function ApprovalDetail() {
             </div>
 
             {needsSpokeConfirm ? (
-              <label className="flex items-start gap-3 rounded-lg border-2 border-orange-700 bg-orange-50 p-3">
+              <label className="flex items-start gap-3 rounded-ctl border-2 border-high bg-high-bg p-3">
                 <input
                   type="checkbox"
                   className="mt-1 h-6 w-6"
                   checked={spoke}
                   onChange={(event) => setSpoke(event.target.checked)}
                 />
-                <span className="font-semibold text-orange-950">{COPY.approver.spokeConfirm}</span>
+                <span className="font-semibold text-ink">{COPY.approver.spokeConfirm}</span>
               </label>
             ) : null}
 
@@ -258,7 +258,7 @@ export function ApprovalDetail() {
             </div>
 
             {mode === 'reject' ? (
-              <fieldset className="rounded-lg border-2 border-slate-400 p-4">
+              <fieldset className="rounded-ctl border-2 border-rule-2 p-4">
                 <legend className="font-semibold">Why are you stopping this?</legend>
                 <div className="mt-2 space-y-2">
                   {REJECTION_REASONS.map((reason) => (
@@ -294,7 +294,7 @@ export function ApprovalDetail() {
             ) : null}
 
             {mode === 'ask' ? (
-              <div className="rounded-lg border-2 border-slate-400 p-4">
+              <div className="rounded-ctl border-2 border-rule-2 p-4">
                 <label htmlFor="question" className="block font-semibold">
                   What do you want to ask?
                 </label>

@@ -2,17 +2,171 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fonts are self-hosted. Nothing may be fetched at runtime: the nginx CSP is
+   `default-src 'self'` and the README's "zero further requests" claim is
+   enforced by it, not merely asserted. Never add a Google Fonts <link> here.
+
+   DM Sans, as one variable font per subset — `font-weight: 100 1000` means a
+   single 37 kB file covers every weight the UI uses, instead of one static
+   face per weight. The files are committed in public/fonts/; refresh them with
+   `npm run fonts:sync` (see scripts/sync-fonts.mjs). Upright only: the app
+   uses no italics.
+
+   The unicode-ranges are Google's own split, so a page of plain English pulls
+   only the 37 kB latin file and leaves latin-ext alone. A handful of symbols
+   the app uses — the arrow in the audit log, the tick, the switch's sun and
+   moon — sit outside both ranges and render from the fallback stack, which is
+   what DM Sans not containing them means. */
+
+@font-face {
+  font-family: 'DM Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 1000;
+  src: url('/fonts/dm-sans-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'DM Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 1000;
+  src: url('/fonts/dm-sans-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* ---------------------------------------------------------------------------
+   Palette
+   ---------------------------------------------------------------------------
+   Drawn from the Trustpay brand sheet (src/assets/DesignThinkingColorScheme):
+
+     #f4f4f4  paper      #1f0453  indigo      #31a694  teal      #84c976  green
+
+   Every ratio below is measured, not guessed. Text tokens clear 4.5:1 against
+   both `paper` and `surface`; `rule-2`, `ok-dot` and the brand accents clear
+   3:1, because they carry component boundaries and state indicators (SC 1.4.11).
+   The soft *-border tokens are deliberately under 3:1 — they only reinforce a
+   tint that already sits behind a coloured label and an icon, so they are never
+   the sole carrier of meaning.
+
+   Values are bare `R G B` triples so Tailwind's `/<alpha-value>` still works.
+   `:root` is light; `:root[data-theme="dark"]` is the whole of dark mode.
+   ------------------------------------------------------------------------- */
+
 @layer base {
   :root {
     color-scheme: light;
+
+    --c-paper: 244 244 244; /* #f4f4f4 — straight off the brand sheet */
+    --c-surface: 255 255 255;
+    --c-surface-2: 250 249 252;
+    --c-ink: 28 11 63; /* indigo, pulled down to 16.3:1 on paper */
+    --c-ink-2: 77 63 112;
+    --c-ink-3: 102 90 131;
+    --c-rule: 226 223 233;
+    --c-rule-2: 138 130 165; /* 3.3:1 on paper — field and control edges */
+
+    --c-brand: 31 4 83; /* #1f0453 */
+    --c-brand-2: 43 143 128; /* #31a694 held to 3:1 on white */
+    --c-brand-3: 79 155 65; /* #84c976 held to 3:1 on white */
+
+    --c-ok: 22 112 92;
+    --c-ok-ink: 15 74 61;
+    --c-ok-2: 47 106 92;
+    --c-ok-dot: 43 143 128;
+    --c-ok-bg: 233 246 242;
+    --c-ok-border: 163 215 202;
+    --c-ok-hover: 14 87 72;
+    --c-ok-soft: 227 243 228;
+    --c-ok-soft-ink: 29 98 56;
+    --c-on-ok: 255 255 255;
+
+    --c-attend: 138 90 0;
+    --c-attend-bg: 253 246 232;
+    --c-attend-border: 217 201 163;
+
+    --c-high: 164 80 28;
+    --c-high-bg: 253 241 232;
+    --c-high-border: 217 163 124;
+
+    --c-danger: 142 43 34;
+    --c-danger-bg: 251 238 236;
+    --c-danger-border: 217 164 158;
+
+    --c-link: 46 34 136;
+    --c-link-hover: 27 19 96;
+
+    --c-shadow: rgba(31, 4, 83, 0.1);
+    --c-brand-grad-a: #31a694;
+    --c-brand-grad-b: #6dbf85;
+    --c-brand-grad-c: #84c976;
+  }
+
+  /* Dark mode. The app does not follow `prefers-color-scheme`: it always starts
+     light (index.html ships data-theme="light"), and this block applies only
+     once someone flips the switch. That is why there is exactly one dark
+     palette here instead of a media query and an override that must be kept
+     byte-identical. */
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+
+    --c-paper: 20 10 43;
+    --c-surface: 29 17 64;
+    --c-surface-2: 38 23 81;
+    --c-ink: 243 241 248;
+    --c-ink-2: 198 189 220;
+    --c-ink-3: 162 154 192;
+    --c-rule: 53 39 97;
+    --c-rule-2: 110 95 168;
+
+    --c-brand: 188 171 240;
+    --c-brand-2: 79 195 176;
+    --c-brand-3: 143 212 127;
+
+    --c-ok: 126 205 114;
+    --c-ok-ink: 166 227 154;
+    --c-ok-2: 143 212 180;
+    --c-ok-dot: 95 210 182;
+    --c-ok-bg: 22 53 44;
+    --c-ok-border: 47 106 89;
+    --c-ok-hover: 149 220 137;
+    --c-ok-soft: 28 63 40;
+    --c-ok-soft-ink: 159 224 164;
+    --c-on-ok: 13 34 22;
+
+    --c-attend: 242 196 106;
+    --c-attend-bg: 58 43 15;
+    --c-attend-border: 109 84 32;
+
+    --c-high: 244 168 119;
+    --c-high-bg: 63 34 16;
+    --c-high-border: 125 70 32;
+
+    --c-danger: 255 159 146;
+    --c-danger-bg: 61 21 18;
+    --c-danger-border: 124 46 38;
+
+    --c-link: 173 160 247;
+    --c-link-hover: 203 194 255;
+
+    --c-shadow: rgba(0, 0, 0, 0.45);
+    --c-brand-grad-a: #4fc3b0;
+    --c-brand-grad-b: #6fcb96;
+    --c-brand-grad-c: #8fd47f;
   }
 
   html {
     -webkit-text-size-adjust: 100%;
+    background-color: rgb(var(--c-paper));
   }
 
   body {
-    @apply bg-slate-100 text-slate-900 antialiased;
+    @apply bg-paper text-ink antialiased;
     font-size: 16px;
     line-height: 1.6;
   }
@@ -31,12 +185,19 @@
   }
 
   :focus-visible {
-    @apply outline-none ring-4 ring-blue-700 ring-offset-2 ring-offset-white rounded-sm;
+    @apply outline-none ring-4 ring-link ring-offset-2 ring-offset-surface rounded-sm;
   }
 
   h1, h2, h3 {
-    @apply font-semibold tracking-tight;
-    line-height: 1.25;
+    @apply font-display font-medium;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+  }
+
+  /* Brand PNGs carry no alpha in their originals; the dematted `trustpay-*.png`
+     variants do, so they need no plate in either theme. */
+  img {
+    max-width: 100%;
   }
 }
 
@@ -46,11 +207,22 @@
     font-size: 18px;
   }
   .simple-mode h1 {
-    @apply text-3xl sm:text-4xl;
+    @apply text-4xl;
   }
   .simple-mode h2 {
-    @apply text-2xl;
+    @apply text-3xl;
   }
+  /* CAUTION: these are class + element selectors (specificity 0,1,1), so they
+     outrank a single utility class (0,1,0) no matter what the source order is.
+     A `text-[64px]` on a <p> in here silently renders at 18px. Display type on
+     Margaret's screens therefore uses a <div> (see sender/Home.tsx).
+
+     They are also redundant with `.simple-mode`'s own 18px above, which an
+     unstyled <p> already inherits — `text-lg` is 1.125rem, the same 18px. The
+     only thing they add is the line-height and the override problem. Worth
+     deleting, but that would let every explicit `text-sm`/`text-[15px]` on
+     Margaret's screens shrink to its written size, which is a legibility
+     decision rather than a tidy-up. */
   .simple-mode p,
   .simple-mode li,
   .simple-mode label {
@@ -61,46 +233,88 @@
     font-size: 16px;
   }
   .standard-mode h1 {
-    @apply text-2xl sm:text-3xl;
+    @apply text-3xl;
   }
   .standard-mode h2 {
-    @apply text-xl;
+    @apply text-2xl;
   }
 
+  /* Hairline plus the faintest lift. On the indigo dark ground a hairline alone
+     disappears, so the shadow token carries the separation there. */
   .card {
-    @apply rounded-xl border border-slate-300 bg-white p-5 shadow-sm;
+    @apply rounded-card border border-rule bg-surface p-5 shadow-card;
   }
 
-  /* 48x48 minimum target, 16px between primary actions. */
+  /* 52x52 minimum target, 16px between primary actions. */
   .btn {
-    @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-lg
-           border-2 px-5 py-3 font-semibold transition-colors;
+    @apply inline-flex min-h-[52px] items-center justify-center gap-2 rounded-ctl
+           px-6 py-3 font-semibold transition-colors;
   }
+  /* Brand green is the only filled button in the app. `text-on-ok` — not
+     `text-white` — because the fill inverts to a bright green in dark mode. */
   .btn-primary {
-    @apply btn border-blue-800 bg-blue-800 text-white hover:bg-blue-900;
+    @apply btn border-0 bg-ok text-on-ok hover:bg-ok-hover;
   }
   .btn-secondary {
-    @apply btn border-slate-400 bg-white text-slate-900 hover:bg-slate-100;
+    @apply btn border-[1.5px] border-rule-2 bg-surface text-ink hover:bg-paper;
   }
   .btn-danger {
-    @apply btn border-red-800 bg-white text-red-900 hover:bg-red-50;
+    @apply btn border-[1.5px] border-danger bg-surface text-danger hover:bg-danger-bg;
   }
   .btn-huge {
-    @apply btn min-h-[72px] w-full border-blue-800 bg-blue-800 px-6 text-xl text-white
-           hover:bg-blue-900 sm:text-2xl;
+    @apply btn min-h-[80px] w-full border-0 bg-ok px-6 text-2xl text-on-ok shadow-lift
+           hover:bg-ok-hover sm:text-[26px];
   }
 
   .field {
-    @apply w-full min-h-[48px] rounded-lg border-2 border-slate-400 bg-white px-4 py-3
-           text-lg text-slate-900 placeholder:text-slate-500;
+    @apply w-full min-h-[52px] rounded-ctl border-[1.5px] border-rule-2 bg-surface px-4 py-3
+           text-lg text-ink placeholder:text-ink-3;
   }
 
   .chip {
-    @apply inline-flex min-h-[48px] items-center rounded-full border-2 px-4 py-2 text-base font-medium;
+    @apply inline-flex min-h-[52px] items-center rounded-full border-[1.5px] px-4 py-2 text-base font-medium;
   }
 
   .link {
-    @apply font-semibold text-blue-800 underline underline-offset-4 hover:text-blue-900;
+    @apply font-semibold text-link underline underline-offset-4 hover:text-link-hover;
+  }
+
+  .eyebrow {
+    @apply font-sans text-[13px] font-semibold uppercase tracking-[0.1em] text-ink-3;
+  }
+  .eyebrow-attend {
+    @apply eyebrow text-attend;
+  }
+  /* "This needs you": amber left edge, and nothing else in the app is amber. */
+  .card-attend {
+    @apply rounded-card border border-rule border-l-[5px] border-l-attend bg-surface p-5 shadow-card;
+  }
+  /* "Settled / protected": green, and only for states that really are. */
+  .card-ok {
+    @apply rounded-card border border-ok-border border-l-[5px] border-l-ok bg-ok-bg p-5;
+  }
+  /* "Ring them": one step past attend. */
+  .card-high {
+    @apply rounded-card border-2 border-high bg-high-bg p-5;
+  }
+  .card-danger {
+    @apply rounded-card border-2 border-danger bg-danger-bg p-5 text-danger;
+  }
+  .pill-ok {
+    @apply inline-flex items-center gap-[7px] rounded-full border border-ok-border bg-ok-bg
+           px-3 py-[5px] font-sans text-[12.5px] font-semibold text-ok;
+  }
+  .tick-ok {
+    @apply inline-flex shrink-0 items-center justify-center rounded-full bg-ok text-on-ok;
+  }
+  .row-split {
+    @apply flex items-center justify-between gap-4 border-t border-rule pt-[18px];
+  }
+
+  /* The one place the brand gradient is allowed to run full width: a 3px rule
+     under the header, and the hero wash on the landing screen. */
+  .brand-rule {
+    @apply h-[3px] w-full bg-brand-sweep;
   }
 }
 

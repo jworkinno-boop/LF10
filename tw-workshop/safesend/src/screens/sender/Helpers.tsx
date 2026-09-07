@@ -20,22 +20,24 @@ export function Helpers() {
 
   return (
     <AppShell persona="margaret" title={COPY.sender.whoHelpsMe}>
-      <div className="mx-auto max-w-2xl space-y-6">
+      <div className="w-full space-y-6">
         <h2 className="text-2xl">{COPY.sender.whoHelpsMe}</h2>
 
-        {active.length === 0 ? (
-          <div className="card">
-            <p className="text-lg font-semibold">Nobody is checking your payments at the moment.</p>
-            <p className="mt-2">
-              You can ask someone to help again from the demo controls, or activate{' '}
-              {COPY.people.secondContact.first}.
-            </p>
-          </div>
+        {/* Panels sit side by side and wrap; each is only as wide as it needs. */}
+        <div className="grid items-start justify-center gap-6 grid-cols-[repeat(auto-fill,minmax(min(22rem,100%),34rem))]">
+          {active.length === 0 ? (
+            <div className="card">
+              <p className="text-lg font-semibold">Nobody is checking your payments at the moment.</p>
+              <p className="mt-2">
+                You can ask someone to help again from the demo controls, or activate{' '}
+                {COPY.people.secondContact.first}.
+              </p>
+        </div>
         ) : (
           active.map((contact) => (
-            <section key={contact.id} className="card">
+            <section key={contact.id} className="card 2xl:col-span-2">
               <h3 className="text-xl font-bold">{contact.name}</h3>
-              <p className="text-slate-700">
+              <p className="text-ink-2">
                 {contact.relationship} · helping since {formatDate(contact.since)}
               </p>
               <p className="mt-2">
@@ -43,7 +45,7 @@ export function Helpers() {
               </p>
 
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-lg border border-slate-300 p-3">
+                <div className="rounded-ctl border border-rule p-3">
                   <p className="font-semibold">What {contact.name.split(' ')[0]} can do</p>
                   <ul className="mt-2 space-y-1">
                     {COPY.agreement.approverCan.map((line) => (
@@ -51,7 +53,7 @@ export function Helpers() {
                     ))}
                   </ul>
                 </div>
-                <div className="rounded-lg border border-slate-300 p-3">
+                <div className="rounded-ctl border border-rule p-3">
                   <p className="font-semibold">What he cannot do</p>
                   <ul className="mt-2 space-y-1">
                     {COPY.agreement.approverCannot.map((line) => (
@@ -71,7 +73,7 @@ export function Helpers() {
             is anything unusual. More than{' '}
             <Money cents={state.settings.dailyLimitCents} /> in one day is checked too.
           </p>
-          <p className="mt-2 text-slate-700">
+          <p className="mt-2 text-ink-2">
             You can always lower these amounts yourself, straight away. Raising them takes 24 hours
             and you are always told.
           </p>
@@ -99,7 +101,7 @@ export function Helpers() {
         {trusted.length > 0 || pendingTrusted.length > 0 ? (
           <section className="card">
             <h3 className="text-xl font-bold">People {COPY.people.approver.first} marked as trusted</h3>
-            <p className="mt-2 text-slate-700">
+            <p className="mt-2 text-ink-2">
               Payments to these people below your checking amount are not checked. You can undo this
               at any time.
             </p>
@@ -206,6 +208,8 @@ export function Helpers() {
             Read our agreement
           </Link>
         </section>
+
+        </div>
 
         <ConfirmDialog
           open={confirming !== null}

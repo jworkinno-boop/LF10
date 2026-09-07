@@ -27,7 +27,7 @@ export function DemoPanel() {
         <section className="card">
           <h2 className="text-xl">Demo clock</h2>
           <p className="mt-1">Now: {formatDateTime(iso(now()))}</p>
-          <p className="mt-1 text-sm text-slate-700">
+          <p className="mt-1 text-sm text-ink-2">
             The clock is frozen so seeded data stays stable. Advancing it materialises holds,
             expiries and pending settings changes.
           </p>
@@ -60,14 +60,15 @@ export function DemoPanel() {
 
         <section className="card">
           <h2 className="text-xl">Scenarios</h2>
-          <p className="mt-1 text-sm text-slate-700">
-            Loading a scenario resets the demo and fills in a payment at step 5, ready to check.
+          <p className="mt-1 text-sm text-ink-2">
+            Loading a scenario resets the demo. Most fill in a payment at step 5, ready to check;
+            one opens with a payment already waiting for David.
           </p>
           <ul className="mt-3 space-y-3">
             {SCENARIOS.map((scenario) => (
-              <li key={scenario.id} className="rounded-lg border border-slate-300 p-3">
+              <li key={scenario.id} className="rounded-ctl border border-rule p-3">
                 <p className="font-semibold">{scenario.title}</p>
-                <p className="text-sm text-slate-700">{scenario.summary}</p>
+                <p className="text-sm text-ink-2">{scenario.summary}</p>
                 <p className="mt-1 text-sm">
                   <b>Expected:</b> {scenario.expected}
                 </p>
@@ -76,10 +77,10 @@ export function DemoPanel() {
                   className="btn-primary mt-3"
                   onClick={() => {
                     dispatch({ type: 'LOAD_SCENARIO', scenarioId: scenario.id, nowMs: now() });
-                    navigate('/m/send');
+                    navigate(scenario.landsOn ?? '/m/send');
                   }}
                 >
-                  Load and open step 5
+                  {scenario.landsOn ? 'Load and open her home' : 'Load and open step 5'}
                 </button>
               </li>
             ))}
@@ -148,7 +149,7 @@ export function DemoPanel() {
               Open as {COPY.people.approver.first}
             </button>
           </div>
-          <p className="mt-3 text-sm text-slate-700">
+          <p className="mt-3 text-sm text-ink-2">
             On a single device the persona switcher is itself the bypass. Different PINs perform the
             separation between the two roles; they do not provide it. See NOTES.md.
           </p>

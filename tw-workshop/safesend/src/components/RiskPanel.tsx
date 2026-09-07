@@ -41,7 +41,7 @@ export function SenderRiskPanel({
 
   return (
     <section
-      className={`rounded-xl border-2 p-5 ${BAND_PANEL_STYLES[assessment.band]}`}
+      className={`rounded-card border-2 p-5 ${BAND_PANEL_STYLES[assessment.band]}`}
       aria-labelledby="risk-heading"
     >
       <p aria-live="polite" className="sr-only">
@@ -67,10 +67,12 @@ export function SenderRiskPanel({
         <p className="mt-4">{COPY.risk.noReasons}</p>
       )}
 
+      {/* The one place today's UI already had a positive state: it gets the
+          green card, because "this looked normal" is settled. */}
       {reassurances.length > 0 ? (
-        <div className="mt-4 rounded-lg bg-white/70 p-3">
-          <p className="font-semibold">What looked normal</p>
-          <ul className="mt-1 space-y-1">
+        <div className="card-ok mt-4">
+          <p className="font-semibold text-ok-ink">What looked normal</p>
+          <ul className="mt-1 space-y-1 text-ok-2">
             {reassurances.map((reason) => (
               <li key={reason.ruleId}>{reason.plainLanguage}</li>
             ))}
@@ -96,7 +98,7 @@ export function ApproverRiskPanel({ assessment }: { assessment: RiskAssessment }
         <h2 id="risk-report-heading">{COPY.risk.approverHeading}</h2>
         <div className="flex items-center gap-3">
           <RiskBadge band={assessment.band} />
-          <span className="rounded bg-slate-900 px-2 py-1 font-mono text-sm text-white">
+          <span className="rounded bg-ink px-2 py-1 font-mono text-sm text-paper">
             {assessment.score}/100
           </span>
         </div>
@@ -105,7 +107,7 @@ export function ApproverRiskPanel({ assessment }: { assessment: RiskAssessment }
       <table className="mt-4 w-full text-left text-sm">
         <caption className="sr-only">Rules that contributed to this score</caption>
         <thead>
-          <tr className="border-b border-slate-300 text-slate-700">
+          <tr className="border-b border-rule text-ink-2">
             <th scope="col" className="py-2 pr-2 font-semibold">Rule</th>
             <th scope="col" className="py-2 pr-2 font-semibold">Points</th>
             <th scope="col" className="py-2 font-semibold">Detail</th>
@@ -113,10 +115,10 @@ export function ApproverRiskPanel({ assessment }: { assessment: RiskAssessment }
         </thead>
         <tbody>
           {applied.map((reason) => (
-            <tr key={reason.ruleId} className="border-b border-slate-200 align-top">
+            <tr key={reason.ruleId} className="border-b border-rule align-top">
               <td className="py-2 pr-2 font-mono">{reason.ruleId}</td>
               <td
-                className={`py-2 pr-2 font-mono ${reason.points < 0 ? 'text-emerald-800' : 'text-slate-900'}`}
+                className={`py-2 pr-2 font-mono ${reason.points < 0 ? 'text-ok' : 'text-ink'}`}
               >
                 {reason.points > 0 ? `+${reason.points}` : reason.points}
               </td>
@@ -125,7 +127,7 @@ export function ApproverRiskPanel({ assessment }: { assessment: RiskAssessment }
           ))}
           {applied.length === 0 ? (
             <tr>
-              <td colSpan={3} className="py-2 text-slate-700">
+              <td colSpan={3} className="py-2 text-ink-2">
                 No rules fired.
               </td>
             </tr>
@@ -134,9 +136,9 @@ export function ApproverRiskPanel({ assessment }: { assessment: RiskAssessment }
       </table>
 
       {gated.length > 0 ? (
-        <div className="mt-4 rounded-lg border-2 border-slate-400 bg-slate-50 p-3">
+        <div className="mt-4 rounded-ctl border-2 border-rule-2 bg-paper p-3">
           <p className="font-semibold">Mitigators calculated but ignored</p>
-          <p className="mt-1 text-sm text-slate-700">
+          <p className="mt-1 text-sm text-ink-2">
             Gated because {assessment.mitigatorGateReasons.join('; ')}.
           </p>
           <ul className="mt-2 space-y-1 text-sm">
@@ -153,13 +155,13 @@ export function ApproverRiskPanel({ assessment }: { assessment: RiskAssessment }
       ) : null}
 
       {assessment.circumstantialCapped ? (
-        <p className="mt-3 text-sm text-slate-700">{COPY.risk.circumstantialCapped}</p>
+        <p className="mt-3 text-sm text-ink-2">{COPY.risk.circumstantialCapped}</p>
       ) : null}
 
-      <p className="mt-3 text-sm text-slate-700">
+      <p className="mt-3 text-sm text-ink-2">
         Engine {assessment.engineVersion}. Assessed at submission and frozen since.
       </p>
-      <p className="mt-1 text-sm font-medium text-slate-800">{COPY.app.riskDisclaimer}</p>
+      <p className="mt-1 text-sm font-medium text-ink-2">{COPY.app.riskDisclaimer}</p>
     </section>
   );
 }

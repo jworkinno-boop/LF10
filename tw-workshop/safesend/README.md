@@ -1,4 +1,4 @@
-# SafeSend (demo)
+# TrustPay (demo)
 
 A clickable prototype of a **protective approval layer** between a bank account
 holder and an outgoing transfer.
@@ -23,14 +23,14 @@ listening on port 3100. Health check: `http://localhost:3100/healthz`.
 Without compose:
 
 ```bash
-docker build -t safesend .
-docker run --rm -p 3100:3100 safesend
+docker build -t trustpay .
+docker run --rm -p 3100:3100 trustpay
 ```
 
 Hot-reloading dev server in a container, same port:
 
 ```bash
-docker compose --profile dev up safesend-dev
+docker compose --profile dev up trustpay-dev
 ```
 
 ## Run it without Docker
@@ -148,7 +148,7 @@ script. (There is no Playwright suite in this build — see NOTES.md.)
 4. Without touching Tab B, watch it:
    - the bell count in the header increases,
    - the request appears in *“Waiting for your decision”*,
-   - the browser tab title becomes **“(1) SafeSend (demo)”**.
+   - the browser tab title becomes **“(1) TrustPay (demo)”**.
 5. In Tab B, approve or reject. Tab A updates without a refresh.
 6. In Tab B, open **Messages** — the notification inbox shows what the SMS,
    email and push notification would look like. **The SMS contains no link and
@@ -157,9 +157,12 @@ script. (There is no Playwright suite in this build — see NOTES.md.)
 ### Verifying the privacy claim
 
 Open DevTools → Network, tick *Disable cache*, and reload. After the initial
-document, JS and CSS, there are **zero further requests**. The nginx config
-ships a Content-Security-Policy of `default-src 'self'` with
-`connect-src 'self'`, so this is enforced rather than merely asserted.
+document, JS, CSS, `theme-boot.js`, the DM Sans woff2 and the brand PNG — all
+same-origin — there are **zero further requests**. The nginx config ships a
+Content-Security-Policy of `default-src 'self'` with `connect-src 'self'`, so
+this is enforced rather than merely asserted. `theme-boot.js` is a separate file
+rather than an inline `<script>` for exactly that reason: `script-src` stays
+`'self'` with no `'unsafe-inline'`.
 
 ---
 
@@ -167,7 +170,7 @@ ships a Content-Security-Policy of `default-src 'self'` with
 
 - `/setup` — **Our agreement**: the consent artefact. What each person can and
   cannot do, and who is allowed to change what.
-- `/m/helpers` — **Who helps me**. Margaret can lower the checking amount
+- `/m/helpers` — **Trusted Person**. Margaret can lower the checking amount
   instantly, and can start *“Stop asking David”*. It takes 24 hours, both are
   told, and **only she can cancel it** — David has no veto.
 - `/d/settings` — David can request a *higher* checking amount; it takes 24
@@ -178,8 +181,13 @@ ships a Content-Security-Policy of `default-src 'self'` with
   clock past a 30-minute hold, a 24-hour approval expiry or a 24-hour settings
   delay.
 - Resize to **320px** and zoom to **400%**. Margaret's screens stay in one
-  column, targets stay at least 48×48px, and the sticky demo banner never
+  column, targets stay at least 52×52px, and the sticky demo banner never
   covers a focused element.
+- **Dark mode** — the switch at the right of the header, on every screen. The
+  app always starts light, whatever the OS is set to, so the landing page looks
+  the same for everyone the first time; the switch then remembers the choice for
+  that browser. Both themes are drawn from the Trustpay brand sheet and every
+  text token is measured at 4.5:1 or better against its own background, in both.
 
 ---
 
@@ -191,6 +199,9 @@ src/
   copy.ts          every user-facing string
   clock.ts         the only module allowed to call Date.now() / new Date()
   format.ts        money, dates, relative times, amount-in-words
+  theme.tsx        dark-mode switch; always starts light, remembers the choice
+  index.css        both palettes, as CSS custom properties, in one place
+  assets/          Trustpay brand sheet + the de-matted PNGs the app uses
   risk/            assessRisk, rules, mitigators, scam patterns, 2 test suites
   state/           reducer, materialiseTime, persistence, migrations, broadcast
   data/            seed, keywords, high-risk countries, mock CoP, scenarios

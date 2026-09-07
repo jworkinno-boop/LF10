@@ -8,7 +8,7 @@
 import { CONFIG } from '../config';
 import { COPY } from '../copy';
 import { iso, parse, plusHours, plusMinutes } from '../clock';
-import { formatMoney } from '../format';
+import { formatMoney, formatSettingsValue } from '../format';
 import { id, referenceCode } from '../ids';
 import { assessRisk, bandRank } from '../risk/assessRisk';
 import { materialisePayee } from './payees';
@@ -270,8 +270,8 @@ function commitPendingChange(state: AppState, changeId: string, atIso: string): 
   next = audit(next, {
     actor: 'system',
     action: 'settings_change_applied',
-    fromState: String(change.currentValue),
-    toState: String(change.newValue),
+    fromState: formatSettingsValue(change.field, change.currentValue),
+    toState: formatSettingsValue(change.field, change.newValue),
     timestamp: atIso,
     note: change.label,
   }).state;
@@ -892,8 +892,8 @@ export function reducer(state: AppState, action: Action): AppState {
         next = audit(next, {
           actor: action.actor,
           action: 'settings_changed',
-          fromState: String(current),
-          toState: String(action.value),
+          fromState: formatSettingsValue(field, current),
+          toState: formatSettingsValue(field, action.value),
           timestamp: atIso,
           note: policy.label,
         }).state;
@@ -921,8 +921,8 @@ export function reducer(state: AppState, action: Action): AppState {
       next = audit(next, {
         actor: action.actor,
         action: 'settings_change_requested',
-        fromState: String(current),
-        toState: String(action.value),
+        fromState: formatSettingsValue(field, current),
+        toState: formatSettingsValue(field, action.value),
         timestamp: atIso,
         note: policy.label,
       }).state;

@@ -12,7 +12,7 @@ export function ErrorState({
   return (
     <div
       role="alert"
-      className="rounded-xl border-2 border-red-700 bg-red-50 p-4 text-red-950"
+      className="card-danger p-4"
     >
       <p className="font-bold">{title}</p>
       {children ? <div className="mt-1">{children}</div> : null}

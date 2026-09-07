@@ -5,10 +5,14 @@ export const CONFIG = {
   currency: 'EUR' as const,
   timeZone: 'Europe/Amsterdam',
   bankName: 'Northgate Bank (demo)',
-  appDomain: 'safesend.example',
-  storageKey: 'safesend.state.v1',
+  appDomain: 'trustpay.example',
+  /** Bumped to v2 to reset every stored demo stat — the checking amount, the
+      daily limit and the rest — back to `defaults` below. A new key reseeds
+      rather than migrating, which is the point: this is a demo, and its
+      seeded scenario is what it is meant to show. */
+  storageKey: 'trustpay.state.v2',
   schemaVersion: 1 as const,
-  broadcastChannel: 'safesend',
+  broadcastChannel: 'trustpay',
   engineVersion: '2.0.0',
 
   defaults: {

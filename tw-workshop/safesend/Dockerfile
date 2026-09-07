@@ -10,6 +10,8 @@ RUN npm ci
 
 COPY tsconfig*.json vite.config.ts postcss.config.js tailwind.config.js index.html ./
 COPY src ./src
+# public/ carries theme-boot.js and the favicons; without it they 404.
+COPY public ./public
 
 # Type-check, run the risk-engine and state-machine suites, then build.
 # A failing test fails the image build.

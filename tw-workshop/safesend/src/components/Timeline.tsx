@@ -22,18 +22,18 @@ export function Timeline({ transfer, entries }: { transfer: Transfer; entries: A
     <ol className="space-y-3">
       {relevant.map((entry) => (
         <li key={entry.id} className="flex gap-3">
-          <span aria-hidden="true" className="mt-2 h-3 w-3 shrink-0 rounded-full bg-blue-800" />
+          <span aria-hidden="true" className="mt-2 h-3 w-3 shrink-0 rounded-full bg-ink" />
           <div>
             <p className="font-semibold">
               {PLAIN[entry.action] ?? entry.action.replace(/_/g, ' ')}
             </p>
-            <p className="text-slate-700">{formatDateTime(entry.timestamp)}</p>
+            <p className="text-ink-2">{formatDateTime(entry.timestamp)}</p>
             {entry.note ? <p className="mt-1">{entry.note}</p> : null}
           </div>
         </li>
       ))}
       <li className="flex gap-3">
-        <span aria-hidden="true" className="mt-2 h-3 w-3 shrink-0 rounded-full bg-slate-400" />
+        <span aria-hidden="true" className="mt-2 h-3 w-3 shrink-0 rounded-full bg-ink-3" />
         <p className="font-semibold">Now: {COPY.states[transfer.state]}</p>
       </li>
     </ol>

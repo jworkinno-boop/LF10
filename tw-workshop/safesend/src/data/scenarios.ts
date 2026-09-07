@@ -2,10 +2,12 @@
 // step 5 (plus any prior transfers the scenario needs), so a reviewer can see
 // the outcome in a single click.
 
-import { HOUR_MS, iso } from '../clock';
+import { CONFIG } from '../config';
+import { HOUR_MS, iso, plusHours } from '../clock';
 import { assessRisk } from '../risk/assessRisk';
 import { riskContextFor } from '../state/selectors';
 import { materialisePayee } from '../state/payees';
+import { buildNotification } from '../state/notifications';
 import { referenceCode } from '../ids';
 import type { AppState, Payee, ReasonCategory, SafetyAnswers, Transfer } from '../types';
 
@@ -14,6 +16,9 @@ export type Scenario = {
   title: string;
   summary: string;
   expected: string;
+  /** Where the demo panel should drop the reviewer. Defaults to the wizard,
+   *  because most scenarios pre-fill a draft at step 5. */
+  landsOn?: string;
   build: (state: AppState, nowMs: number) => AppState;
 };
 
@@ -95,6 +100,9 @@ function seedTransfer(
     risk,
     state: finalState,
     ...(finalState === 'SENT' ? { sentAt: atIso } : {}),
+    ...(finalState === 'PENDING_APPROVAL'
+      ? { expiresAt: iso(plusHours(atMs, CONFIG.approvalExpiryHours)) }
+      : {}),
     ...(approval ? { approval } : {}),
   };
 
@@ -117,6 +125,21 @@ function seedTransfer(
       },
     ],
   };
+  if (finalState === 'PENDING_APPROVAL') {
+    // The approver only knows about it because he was told, so seed that too.
+    next = {
+      ...next,
+      notifications: [
+        ...next.notifications,
+        buildNotification({
+          type: 'approval_requested',
+          toPersona: 'david',
+          createdAt: atIso,
+          transfer,
+        }),
+      ],
+    };
+  }
   if (finalState === 'SENT') {
     const account = next.accounts.margaret;
     next = {
@@ -330,6 +353,31 @@ export const SCENARIOS: Scenario[] = [
         priorReasonText: original.reasonText,
       });
     },
+  },
+  {
+    id: 'awaiting_approval',
+    title: '10. Payment already waiting',
+    summary: 'EUR 1,850 to Rosewood Garden Care, sent to David three hours ago.',
+    expected:
+      'Opens on Margaret\'s home with the amber waiting card. David has one approval in his queue.',
+    landsOn: '/m',
+    build: (state, nowMs) =>
+      seedTransfer(
+        {
+          ...state,
+          activePersona: 'margaret',
+          unlocked: ['margaret', 'david'],
+        },
+        {
+          payeeId: 'payee_garden',
+          amountCents: 185_000,
+          reasonCategory: 'repairs',
+          reasonText: 'New fence and gate, quoted in writing',
+          safetyAnswers: REASSURING,
+        },
+        nowMs - 3 * HOUR_MS,
+        'PENDING_APPROVAL',
+      ).state,
   },
 ];
 

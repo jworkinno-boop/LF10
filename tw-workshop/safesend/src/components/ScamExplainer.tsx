@@ -1,4 +1,5 @@
 import { COPY } from '../copy';
+import { ScamPictogram } from './ScamPictogram';
 import type { ScamPattern } from '../types';
 
 export function ScamExplainer({
@@ -13,14 +14,24 @@ export function ScamExplainer({
     <section
       className={
         prominent
-          ? 'rounded-xl border-2 border-red-700 bg-red-50 p-5 text-red-950'
-          : 'rounded-xl border border-slate-300 bg-white p-4'
+          ? 'card-danger'
+          : 'rounded-card border border-rule bg-surface p-4'
       }
       aria-labelledby={`scam-${pattern}`}
     >
-      <h3 id={`scam-${pattern}`} className="text-xl font-bold">
-        {content.title}
-      </h3>
+      <div className="flex items-start gap-3">
+        <ScamPictogram
+          pattern={pattern}
+          className={
+            prominent
+              ? 'border-danger-border bg-surface text-danger'
+              : 'border-rule bg-surface-2 text-brand-2'
+          }
+        />
+        <h3 id={`scam-${pattern}`} className="text-xl font-bold">
+          {content.title}
+        </h3>
+      </div>
       <dl className="mt-3 space-y-2">
         <div>
           <dt className="font-semibold">How it starts</dt>
@@ -46,7 +57,7 @@ export function ScamExplainerList({ patterns }: { patterns: ScamPattern[] }) {
     <div className="space-y-4">
       <ScamExplainer pattern={first} prominent />
       {rest.length > 0 ? (
-        <details className="rounded-xl border border-slate-300 bg-white p-4">
+        <details className="rounded-card border border-rule bg-surface p-4">
           <summary className="cursor-pointer font-semibold">
             This also matches {rest.length} other pattern{rest.length === 1 ? '' : 's'}
           </summary>

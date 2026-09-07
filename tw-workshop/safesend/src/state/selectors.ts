@@ -1,7 +1,7 @@
 import { CONFIG } from '../config';
 import { parse } from '../clock';
 import type { RiskContext } from '../risk/assessRisk';
-import type { AppState, NotificationEvent, Persona, Transfer } from '../types';
+import type { AppState, HistoryTxn, NotificationEvent, Persona, Transfer } from '../types';
 
 export function riskContextFor(state: AppState, nowMs: number): RiskContext {
   return {
@@ -33,6 +33,35 @@ export function recentTransfers(state: AppState, limit = 5): Transfer[] {
   return [...state.transfers]
     .sort((a, b) => parse(b.createdAt) - parse(a.createdAt))
     .slice(0, limit);
+}
+
+/** One payment ledger: this demo's transfers and the pre-demo history, newest
+ *  first. `/m/activity` is where the combined view belongs, so the sender's
+ *  home can summarise it in a single row. History items carry no state. */
+export type LedgerItem =
+  | { kind: 'transfer'; id: string; at: string; amountCents: number; payeeName: string; transfer: Transfer }
+  | { kind: 'history'; id: string; at: string; amountCents: number; payeeName: string; history: HistoryTxn };
+
+export function historyAndTransfers(state: AppState): LedgerItem[] {
+  const items: LedgerItem[] = [
+    ...state.transfers.map((t): LedgerItem => ({
+      kind: 'transfer',
+      id: t.id,
+      at: t.createdAt,
+      amountCents: t.amountCents,
+      payeeName: t.payee.displayName,
+      transfer: t,
+    })),
+    ...state.history.map((h): LedgerItem => ({
+      kind: 'history',
+      id: h.id,
+      at: h.at,
+      amountCents: h.amountCents,
+      payeeName: h.payeeName,
+      history: h,
+    })),
+  ];
+  return items.sort((a, b) => parse(b.at) - parse(a.at));
 }
 
 export function transferById(state: AppState, transferId: string): Transfer | undefined {

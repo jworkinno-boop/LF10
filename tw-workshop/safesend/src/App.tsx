@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useApp } from './state/AppStateProvider';
+import { ThemeProvider } from './theme';
 import { unreadCount } from './state/selectors';
 import { COPY } from './copy';
 import { Landing } from './screens/shared/Landing';
@@ -44,103 +45,105 @@ export function App() {
   useDocumentTitle(state.activePersona);
 
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/setup" element={<Agreement />} />
-      <Route path="/audit" element={<AuditLog />} />
-      <Route path="/demo" element={<DemoPanel />} />
+    <ThemeProvider>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/setup" element={<Agreement />} />
+        <Route path="/audit" element={<AuditLog />} />
+        <Route path="/demo" element={<DemoPanel />} />
 
-      <Route
-        path="/m"
-        element={
-          <RequirePersona persona="margaret">
-            <SenderHome />
-          </RequirePersona>
-        }
-      />
-      <Route
-        path="/m/send"
-        element={
-          <RequirePersona persona="margaret">
-            <SendWizard />
-          </RequirePersona>
-        }
-      />
-      <Route
-        path="/m/transfer/:id"
-        element={
-          <RequirePersona persona="margaret">
-            <TransferStatus />
-          </RequirePersona>
-        }
-      />
-      <Route
-        path="/m/activity"
-        element={
-          <RequirePersona persona="margaret">
-            <Activity />
-          </RequirePersona>
-        }
-      />
-      <Route
-        path="/m/helpers"
-        element={
-          <RequirePersona persona="margaret">
-            <Helpers />
-          </RequirePersona>
-        }
-      />
-      <Route
-        path="/m/help"
-        element={
-          <RequirePersona persona="margaret">
-            <Help />
-          </RequirePersona>
-        }
-      />
-      <Route
-        path="/m/report"
-        element={
-          <RequirePersona persona="margaret">
-            <Report />
-          </RequirePersona>
-        }
-      />
+        <Route
+          path="/m"
+          element={
+            <RequirePersona persona="margaret">
+              <SenderHome />
+            </RequirePersona>
+          }
+        />
+        <Route
+          path="/m/send"
+          element={
+            <RequirePersona persona="margaret">
+              <SendWizard />
+            </RequirePersona>
+          }
+        />
+        <Route
+          path="/m/transfer/:id"
+          element={
+            <RequirePersona persona="margaret">
+              <TransferStatus />
+            </RequirePersona>
+          }
+        />
+        <Route
+          path="/m/activity"
+          element={
+            <RequirePersona persona="margaret">
+              <Activity />
+            </RequirePersona>
+          }
+        />
+        <Route
+          path="/m/helpers"
+          element={
+            <RequirePersona persona="margaret">
+              <Helpers />
+            </RequirePersona>
+          }
+        />
+        <Route
+          path="/m/help"
+          element={
+            <RequirePersona persona="margaret">
+              <Help />
+            </RequirePersona>
+          }
+        />
+        <Route
+          path="/m/report"
+          element={
+            <RequirePersona persona="margaret">
+              <Report />
+            </RequirePersona>
+          }
+        />
 
-      <Route
-        path="/d"
-        element={
-          <RequirePersona persona="david">
-            <ApproverDashboard />
-          </RequirePersona>
-        }
-      />
-      <Route
-        path="/d/approve/:id"
-        element={
-          <RequirePersona persona="david">
-            <ApprovalDetail />
-          </RequirePersona>
-        }
-      />
-      <Route
-        path="/d/notifications"
-        element={
-          <RequirePersona persona="david">
-            <Notifications />
-          </RequirePersona>
-        }
-      />
-      <Route
-        path="/d/settings"
-        element={
-          <RequirePersona persona="david">
-            <Settings />
-          </RequirePersona>
-        }
-      />
+        <Route
+          path="/d"
+          element={
+            <RequirePersona persona="david">
+              <ApproverDashboard />
+            </RequirePersona>
+          }
+        />
+        <Route
+          path="/d/approve/:id"
+          element={
+            <RequirePersona persona="david">
+              <ApprovalDetail />
+            </RequirePersona>
+          }
+        />
+        <Route
+          path="/d/notifications"
+          element={
+            <RequirePersona persona="david">
+              <Notifications />
+            </RequirePersona>
+          }
+        />
+        <Route
+          path="/d/settings"
+          element={
+            <RequirePersona persona="david">
+              <Settings />
+            </RequirePersona>
+          }
+        />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </ThemeProvider>
   );
 }

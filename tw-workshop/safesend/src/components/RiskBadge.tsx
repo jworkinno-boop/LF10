@@ -2,17 +2,20 @@ import { COPY } from '../copy';
 import type { RiskBand } from '../types';
 
 // Never colour alone: every band carries an icon AND a text label.
+// The border is the text colour, and every band keeps its icon and label so
+// colour is never alone. LOW shares the green that means "settled", because
+// "looks normal" is the settled state.
 const STYLES: Record<RiskBand, string> = {
-  LOW: 'border-emerald-700 bg-emerald-50 text-emerald-900',
-  MEDIUM: 'border-amber-600 bg-amber-50 text-amber-900',
-  HIGH: 'border-orange-700 bg-orange-50 text-orange-900',
-  CRITICAL: 'border-red-700 bg-red-50 text-red-900',
+  LOW: 'border-ok bg-ok-bg text-ok',
+  MEDIUM: 'border-attend bg-attend-bg text-attend',
+  HIGH: 'border-high bg-high-bg text-high',
+  CRITICAL: 'border-danger bg-danger-bg text-danger',
 };
 
 export function RiskBadge({ band, className = '' }: { band: RiskBand; className?: string }) {
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-full border-2 px-3 py-1 text-base font-bold ${STYLES[band]} ${className}`}
+      className={`inline-flex items-center gap-2 rounded-full border-[1.5px] px-3 py-1 text-base font-bold ${STYLES[band]} ${className}`}
     >
       <span aria-hidden="true">{COPY.risk.bandIcon[band]}</span>
       <span>{COPY.risk.bandLabel[band]}</span>

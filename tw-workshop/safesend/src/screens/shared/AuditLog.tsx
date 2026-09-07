@@ -28,14 +28,14 @@ export function AuditLog() {
       ? COPY.people.sender.first
       : value === 'david'
         ? COPY.people.approver.first
-        : 'SafeSend';
+        : COPY.app.name;
 
   return (
-    <AppShell persona={state.activePersona} title="What has happened">
+    <AppShell persona={state.activePersona} title={COPY.shared.transactionHistory}>
       <div className="space-y-5">
         <div>
           <h2 className="text-xl">Everything either of us has done</h2>
-          <p className="mt-1 text-slate-700">
+          <p className="mt-1 text-ink-2">
             Both people see exactly the same list. Entries are ordered by a sequence number, so two
             things in the same second cannot swap places.
           </p>
@@ -78,9 +78,9 @@ export function AuditLog() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[46rem] text-left text-sm">
-              <caption className="sr-only">Audit log</caption>
+              <caption className="sr-only">{COPY.shared.transactionHistory}</caption>
               <thead>
-                <tr className="border-b-2 border-slate-300">
+                <tr className="border-b-2 border-rule">
                   <th scope="col" className="py-2 pr-3">#</th>
                   <th scope="col" className="py-2 pr-3">When</th>
                   <th scope="col" className="py-2 pr-3">Who</th>
@@ -91,13 +91,13 @@ export function AuditLog() {
               </thead>
               <tbody>
                 {entries.map((entry) => (
-                  <tr key={entry.id} className="border-b border-slate-200 align-top">
+                  <tr key={entry.id} className="border-b border-rule align-top">
                     <td className="py-2 pr-3 font-mono">{entry.seq}</td>
                     <td className="py-2 pr-3">{formatDateTime(entry.timestamp)}</td>
                     <td className="py-2 pr-3">{name(entry.actor)}</td>
                     <td className="py-2 pr-3">
                       {entry.action.replace(/_/g, ' ')}
-                      {entry.note ? <span className="block text-slate-700">{entry.note}</span> : null}
+                      {entry.note ? <span className="block text-ink-2">{entry.note}</span> : null}
                     </td>
                     <td className="py-2 pr-3 font-mono">{entry.transferId ?? '—'}</td>
                     <td className="py-2">

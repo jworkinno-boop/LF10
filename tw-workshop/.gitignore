@@ -19,3 +19,11 @@
 .downloads/
 # Claude notification port files
 .claude-notify-ports/
+
+Makefile 
+
+SafeSend.md
+
+handoff.md
+
+

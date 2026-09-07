@@ -39,45 +39,45 @@ export function ApproverDashboard() {
       <div className="space-y-6">
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="card">
-            <p className="text-sm font-semibold uppercase tracking-wide text-slate-600">
+            <p className="text-sm font-semibold uppercase tracking-wide text-ink-3">
               Waiting for you
             </p>
             <p className="text-3xl font-bold">{pending.length}</p>
           </div>
           <div className="card">
-            <p className="text-sm font-semibold uppercase tracking-wide text-slate-600">
+            <p className="text-sm font-semibold uppercase tracking-wide text-ink-3">
               Unread messages
             </p>
             <p className="text-3xl font-bold">{unread}</p>
           </div>
           <div className="card">
-            <p className="text-sm font-semibold uppercase tracking-wide text-slate-600">
+            <p className="text-sm font-semibold uppercase tracking-wide text-ink-3">
               Last 30 days
             </p>
             <p className="text-3xl font-bold">
               <Money cents={spend.thisMonthCents} />
             </p>
-            <p className="text-sm text-slate-700">
+            <p className="text-sm text-ink-2">
               Usual month <Money cents={spend.usualMonthCents} />
             </p>
           </div>
         </div>
 
         {nudges.length > 0 ? (
-          <section className="rounded-xl border-2 border-orange-700 bg-orange-50 p-4">
-            <h2 className="text-xl font-bold text-orange-950">{COPY.approver.callNow}</h2>
-            <p className="mt-1 text-orange-950">
+          <section className="card-high p-4">
+            <h2 className="text-xl font-bold text-ink">{COPY.approver.callNow}</h2>
+            <p className="mt-1 text-ink">
               You stopped a payment flagged as a likely scam{' '}
               {formatRelative(nudges[0].approval!.decidedAt)} and {COPY.people.sender.first} has not
-              opened SafeSend since. A phone call is worth more than anything this app can do.
+              opened {COPY.app.name} since. A phone call is worth more than anything this app can do.
             </p>
             <p className="mt-2 font-semibold">{state.accounts.margaret.phone}</p>
           </section>
         ) : null}
 
         {holds.length > 0 ? (
-          <section className="rounded-xl border-2 border-blue-800 bg-blue-50 p-4">
-            <h2 className="text-xl font-bold text-blue-950">Waiting to send</h2>
+          <section className="rounded-card border-2 border-attend-border bg-attend-bg p-4">
+            <h2 className="text-xl font-bold text-ink">Waiting to send</h2>
             <ul className="mt-2 space-y-2">
               {holds.map((transfer) => (
                 <li key={transfer.id} aria-live="polite">
@@ -111,7 +111,7 @@ export function ApproverDashboard() {
                       <Link to={`/d/approve/${transfer.id}`} className="link text-lg">
                         <Money cents={transfer.amountCents} /> to {transfer.payee.displayName}
                       </Link>
-                      <p className="text-sm text-slate-700">
+                      <p className="text-sm text-ink-2">
                         Ref {transfer.id} · {formatDateTime(transfer.createdAt)} · expires{' '}
                         {transfer.expiresAt ? formatRelative(transfer.expiresAt) : '—'}
                       </p>
@@ -132,9 +132,9 @@ export function ApproverDashboard() {
           <ul className="mt-3 space-y-2">
             {pattern.map((bucket) => (
               <li key={bucket.label} className="flex items-center gap-3">
-                <span className="w-36 shrink-0 text-sm text-slate-700">{bucket.label}</span>
+                <span className="w-36 shrink-0 text-sm text-ink-2">{bucket.label}</span>
                 <span
-                  className="h-5 rounded bg-blue-800"
+                  className="h-5 rounded bg-link"
                   style={{ width: `${Math.round((bucket.total / maxBar) * 100)}%` }}
                   aria-hidden="true"
                 />
@@ -144,7 +144,7 @@ export function ApproverDashboard() {
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-sm text-slate-700">
+          <p className="mt-3 text-sm text-ink-2">
             This 90-day summary is all you can see. Day-to-day spending stays private.
           </p>
         </section>
@@ -159,7 +159,7 @@ export function ApproverDashboard() {
                 <Link to={`/d/approve/${transfer.id}`} className="link">
                   <Money cents={transfer.amountCents} /> to {transfer.payee.displayName}
                 </Link>
-                <span className="text-sm text-slate-700">{formatDateTime(transfer.createdAt)}</span>
+                <span className="text-sm text-ink-2">{formatDateTime(transfer.createdAt)}</span>
                 <span className="ml-auto font-semibold">{COPY.states[transfer.state]}</span>
               </li>
             ))}

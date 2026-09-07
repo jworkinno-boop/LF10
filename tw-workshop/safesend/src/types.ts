@@ -1,4 +1,4 @@
-// Domain types for SafeSend. Everything here is mock data — no real banking.
+// Domain types for TrustPay. Everything here is mock data — no real banking.
 
 export type Persona = 'margaret' | 'david';
 

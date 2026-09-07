@@ -42,13 +42,13 @@ export function TransferStatus() {
 
   return (
     <AppShell persona="margaret" title="Your payment">
-      <div className="mx-auto max-w-2xl space-y-6">
+      <div className="mx-auto w-full max-w-2xl space-y-6 lg:max-w-3xl">
         <section className="card">
-          <p className="text-slate-700">Reference {transfer.id}</p>
+          <p className="text-ink-2">Reference {transfer.id}</p>
           <h2 className="text-3xl">
             <Money cents={transfer.amountCents} /> to {transfer.payee.displayName}
           </h2>
-          <p className="mt-1 text-slate-700">{formatIban(transfer.payee.iban)}</p>
+          <p className="mt-1 text-ink-2">{formatIban(transfer.payee.iban)}</p>
           <p className="mt-3 text-xl font-semibold">{COPY.states[transfer.state]}</p>
 
           {transfer.state === 'APPROVED_HOLD' && transfer.holdUntil ? (
@@ -58,7 +58,7 @@ export function TransferStatus() {
           ) : null}
 
           {transfer.state === 'REJECTED' ? (
-            <div className="mt-3 rounded-lg border-2 border-amber-600 bg-amber-50 p-4">
+            <div className="mt-3 rounded-ctl border-2 border-attend-border bg-attend-bg p-4">
               <p className="font-semibold">
                 {COPY.people.approver.first} stopped this payment. Nothing left your account.
               </p>
@@ -71,7 +71,7 @@ export function TransferStatus() {
           ) : null}
 
           {transfer.state === 'BLOCKED' ? (
-            <div className="mt-3 rounded-lg border-2 border-red-700 bg-red-50 p-4">
+            <div className="mt-3 rounded-ctl border-2 border-danger bg-danger-bg p-4">
               <p className="font-semibold">
                 This payment was not sent, because it matched a well-known scam pattern.
               </p>
@@ -83,7 +83,7 @@ export function TransferStatus() {
           ) : null}
 
           {transfer.state === 'EXPIRED' ? (
-            <div className="mt-3 rounded-lg border-2 border-amber-600 bg-amber-50 p-4">
+            <div className="mt-3 rounded-ctl border-2 border-attend-border bg-attend-bg p-4">
               <p className="font-semibold">
                 Nobody decided within 24 hours, so this payment expired. Nothing left your account.
               </p>
@@ -104,7 +104,7 @@ export function TransferStatus() {
         {transfer.state === 'INFO_REQUESTED' ? (
           <section className="card space-y-3">
             <h2 className="text-2xl">{COPY.sender.questionHeading}</h2>
-            <p className="rounded-lg bg-blue-50 p-3">“{transfer.infoRequest?.question}”</p>
+            <p className="rounded-ctl bg-attend-bg p-3">“{transfer.infoRequest?.question}”</p>
             <label htmlFor="reply" className="block font-semibold">
               Your reply
             </label>
@@ -114,7 +114,7 @@ export function TransferStatus() {
               value={reply}
               onChange={(event) => setReply(event.target.value)}
             />
-            <p className="text-slate-700">
+            <p className="text-ink-2">
               We will check the payment again with your reply included.
             </p>
             <button

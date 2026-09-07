@@ -23,7 +23,7 @@ export function Notifications() {
     const latest = events[0];
     if (!latest || latest.readAt) return;
     try {
-      new Notification('SafeSend (demo)', { body: latest.channels.pushBody });
+      new Notification(`${COPY.app.name} (demo)`, { body: latest.channels.pushBody });
     } catch {
       /* the flow never depends on this */
     }
@@ -34,10 +34,10 @@ export function Notifications() {
       <div className="space-y-6">
         <div>
           <h2 className="text-xl">Notification inbox</h2>
-          <p className="mt-1 text-slate-700">
+          <p className="mt-1 text-ink-2">
             This is what each message would look like on the three channels.
           </p>
-          <p className="mt-2 rounded-lg border-2 border-blue-800 bg-blue-50 p-3">
+          <p className="mt-2 rounded-ctl border-2 border-attend-border bg-attend-bg p-3">
             {COPY.approver.smsNoLinkNote}
           </p>
         </div>

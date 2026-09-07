@@ -1,6 +1,6 @@
 # NOTES
 
-Assumptions, deviations and limitations for the SafeSend prototype.
+Assumptions, deviations and limitations for the TrustPay prototype.
 
 ---
 
@@ -144,7 +144,7 @@ scenario. `src/risk/falsePositives.test.ts` is that table as executable tests.
   `timesPaid` on a payee is a lifetime counter and is deliberately larger than
   the 90-day list.
 - All fictional: bank “Northgate Bank (demo)”, IBANs beginning `NL00DEMO…`,
-  emails `@example.com`, phone `+31 6 0000 0000`, domain `safesend.example`
+  emails `@example.com`, phone `+31 6 0000 0000`, domain `trustpay.example`
   (RFC 2606 / 6761 reserved).
 
 ---
@@ -204,6 +204,45 @@ No analytics. No backend. No auth library.
   tests.
 - No session timeout anywhere. Back never loses data.
 - Every risk band carries an icon and a text label, never colour alone.
+- Colour lives in exactly one place: the `--c-*` custom properties at the top of
+  `src/index.css`. Components name tokens (`bg-surface`, `text-attend`), never
+  hexes, which is why adding dark mode needed no `dark:` variant anywhere and no
+  change to any screen. Two rules follow from that:
+  - a filled `ok` surface takes `text-on-ok`, never `text-white` — the fill
+    inverts to a bright green in dark mode and needs dark text on it;
+  - the soft `*-border` tokens sit deliberately below 3:1. They only reinforce a
+    tint that already carries a coloured label and an icon, so they are never
+    the sole carrier of meaning. `rule-2` (field and control edges) and `ok-dot`
+    (state indicators) do clear 3:1, because those are load-bearing.
+- The app does not follow `prefers-color-scheme`. It always starts light, so a
+  first visit and the landing page look the same for everyone regardless of OS
+  setting; the switch then stores an explicit light or dark per browser. That is
+  why `index.html` ships `data-theme="light"` in the markup — the default needs
+  no JavaScript and cannot flash — and why there is one dark palette in
+  `index.css` rather than a media query plus an override kept byte-identical.
+- The switch is `role="switch"` with a fixed "Dark mode" name and the state in
+  `aria-checked`. A label that flipped between "Dark mode" and "Light mode"
+  would make a screen reader announce the state that was just left as though it
+  were still the pending request.
+- The scam pictograms are decorative (`aria-hidden`) — each panel's title sits
+  beside them as real text. They use the brand teal, never amber, green or
+  orange: those three carry fixed meanings here ("needs a person", "settled",
+  "ring them") and a decorative icon must not borrow them.
+- `/m/activity` is one column, newest first, and not a wrapping grid. In a grid
+  the reading order of a statement changed with the window width.
+- `CONFIG.storageKey` is `trustpay.state.v2`. Bumping it is how every stored
+  demo stat — the checking amount, the daily limit, the balance, the ledger —
+  was reset back to `CONFIG.defaults`: a new key reseeds instead of migrating.
+  For a demo whose whole job is to show a seeded scenario that is the right
+  trade, and `/demo` → "Reset the whole demo" does the same thing on demand.
+- The audit log stores the *rendered* value of a settings change, not the raw
+  one, because the log is a record a person reads. `formatSettingsValue` keys
+  off the `Cents` suffix that money settings already use, so a new money
+  setting is formatted without touching the reducer.
+- The brand PNGs in `src/assets` have an opaque white matte (PNG colour type 2),
+  which reads as a white card on the indigo dark ground. The `trustpay-*.png`
+  files are the same artwork with that matte solved back out to alpha, so one
+  asset serves both themes and no theme-swapped image is needed.
 - `prefers-reduced-motion: reduce` removes all non-essential motion, including
   the hold countdown.
 

@@ -287,6 +287,19 @@ describe('anti-coercion model', () => {
     expect(next.pendingChanges).toHaveLength(0);
   });
 
+  it('records the change in the audit log as money, not as raw cents', () => {
+    const next = reducer(seedState(), {
+      type: 'REQUEST_SETTINGS_CHANGE',
+      field: 'approvalThresholdCents',
+      value: 10_000,
+      actor: 'margaret',
+      nowMs: NOW,
+    });
+    const entry = next.audit.find((e) => e.action.startsWith('settings_change'));
+    expect(entry).toBeDefined();
+    expect(`${entry!.fromState} → ${entry!.toState}`).toBe('€500.00 → €100.00');
+  });
+
   it('does not let the sender raise the checking amount', () => {
     const next = reducer(seedState(), {
       type: 'REQUEST_SETTINGS_CHANGE',

@@ -49,8 +49,8 @@ export function diffWords(before: string, after: string): Token[] {
 export function ReasonDiff({ before, after }: { before: string; after: string }) {
   const tokens = diffWords(before, after);
   return (
-    <div className="rounded-lg border-2 border-slate-400 bg-white p-3">
-      <p className="mb-2 text-sm font-semibold text-slate-700">
+    <div className="rounded-ctl border-2 border-rule-2 bg-surface p-3">
+      <p className="mb-2 text-sm font-semibold text-ink-2">
         Wording before and after (removed, added)
       </p>
       <p className="leading-8">
@@ -58,13 +58,13 @@ export function ReasonDiff({ before, after }: { before: string; after: string })
           if (token.kind === 'same') return <span key={index}>{token.text}</span>;
           if (token.kind === 'removed') {
             return (
-              <s key={index} className="bg-red-100 text-red-900 decoration-red-700">
+              <s key={index} className="bg-danger-bg text-danger decoration-danger">
                 {token.text}
               </s>
             );
           }
           return (
-            <mark key={index} className="bg-emerald-100 font-semibold text-emerald-950">
+            <mark key={index} className="bg-ok-soft font-semibold text-ok-soft-ink">
               {token.text}
             </mark>
           );

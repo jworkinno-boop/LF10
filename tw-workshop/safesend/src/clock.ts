@@ -1,5 +1,5 @@
 // The ONLY module allowed to touch Date.now() / new Date().
-// Everything time-dependent in SafeSend reads from here so the demo clock can be
+// Everything time-dependent in TrustPay reads from here so the demo clock can be
 // frozen, advanced and reset deterministically.
 
 import { CONFIG } from './config';
@@ -7,7 +7,7 @@ import { CONFIG } from './config';
 /** Frozen seed epoch. All seeded data is relative to this instant. */
 export const DEMO_NOW = '2026-09-03T10:42:00+02:00';
 
-const OFFSET_KEY = 'safesend.clock.v1';
+const OFFSET_KEY = 'trustpay.clock.v1';
 
 const demoNowMs = new Date(DEMO_NOW).getTime();
 

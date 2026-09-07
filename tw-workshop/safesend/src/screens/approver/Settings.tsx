@@ -42,7 +42,7 @@ export function Settings() {
       <div className="space-y-6">
         <section className="card space-y-4">
           <h2 className="text-xl">Amount that needs checking</h2>
-          <p className="text-slate-700">
+          <p className="text-ink-2">
             Currently <Money cents={state.settings.approvalThresholdCents} />. Lowering it is
             instant. Raising it takes 24 hours, and {COPY.people.sender.first} can cancel it.
           </p>
@@ -105,7 +105,7 @@ export function Settings() {
 
         <section className="card space-y-4">
           <h2 className="text-xl">Daily amount</h2>
-          <p className="text-slate-700">
+          <p className="text-ink-2">
             Currently <Money cents={state.settings.dailyLimitCents} />. Going over this forces a
             check — it never blocks a payment outright.
           </p>
@@ -163,7 +163,7 @@ export function Settings() {
             <div key={toggle.field} className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="font-semibold">{toggle.label}</p>
-                <p className="text-sm text-slate-700">{toggle.help}</p>
+                <p className="text-sm text-ink-2">{toggle.help}</p>
               </div>
               <button
                 type="button"
@@ -179,7 +179,7 @@ export function Settings() {
 
         <section className="card">
           <h2 className="text-xl">Trusted payees</h2>
-          <p className="mt-1 text-slate-700">
+          <p className="mt-1 text-ink-2">
             Adding one takes 24 hours, {COPY.people.sender.first} is told, and she can undo it at any
             time — before or after.
           </p>
@@ -225,7 +225,7 @@ export function Settings() {
                       Cancel this change
                     </button>
                   ) : (
-                    <span className="text-sm text-slate-700">
+                    <span className="text-sm text-ink-2">
                       Only {COPY.people.sender.first} can cancel this.
                     </span>
                   )}

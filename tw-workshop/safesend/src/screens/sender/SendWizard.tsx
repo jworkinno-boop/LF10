@@ -91,12 +91,12 @@ export function SendWizard() {
 
   return (
     <AppShell persona="margaret" title={COPY.sender.sendMoney}>
-      <div className="mx-auto max-w-2xl space-y-6">
-        <p className="font-semibold text-slate-700">
+      <div className="mx-auto w-full max-w-2xl space-y-6 lg:max-w-3xl">
+        <p className="font-semibold text-ink-2">
           {COPY.wizard.stepOf(step, TOTAL_STEPS)}
         </p>
         <div
-          className="h-3 w-full overflow-hidden rounded-full bg-slate-300"
+          className="h-3 w-full overflow-hidden rounded-full bg-rule-2"
           role="progressbar"
           aria-valuenow={step}
           aria-valuemin={1}
@@ -104,7 +104,7 @@ export function SendWizard() {
           aria-label="Progress through sending money"
         >
           <div
-            className="h-full bg-blue-800"
+            className="h-full bg-ink"
             style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
           />
         </div>
@@ -155,12 +155,12 @@ export function SendWizard() {
                 <dd className="text-xl">
                   {payee?.displayName ?? '—'}
                   {payee ? (
-                    <span className="block text-base text-slate-700">
+                    <span className="block text-base text-ink-2">
                       {formatIban(payee.iban)} · {COUNTRY_NAMES[payee.countryCode] ?? payee.countryCode}
                     </span>
                   ) : null}
                   {payee?.copResult ? (
-                    <span className="mt-1 block text-base text-slate-700">
+                    <span className="mt-1 block text-base text-ink-2">
                       Name check: {copLabel(payee.copResult)}
                       {payee.copNameOnAccount ? ` (${payee.copNameOnAccount})` : ''}
                     </span>
@@ -276,7 +276,7 @@ export function SendWizard() {
             ) : null}
 
             {showAssessment && !assessment ? (
-              <p role="alert" className="font-semibold text-red-800">
+              <p role="alert" className="font-semibold text-danger">
                 Something is missing. Please go back and check each step.
               </p>
             ) : null}
@@ -345,10 +345,10 @@ function StepPayee({
         {payees.map((p) => (
           <label
             key={p.id}
-            className={`flex min-h-[64px] cursor-pointer items-center gap-4 rounded-xl border-2 bg-white p-4 ${
+            className={`flex min-h-[64px] cursor-pointer items-center gap-4 rounded-card border-2 bg-surface p-4 ${
               draft.payeeId === p.id && mode === 'saved'
-                ? 'border-blue-800 ring-2 ring-blue-300'
-                : 'border-slate-300'
+                ? 'border-ink ring-2 ring-rule-2'
+                : 'border-rule'
             }`}
           >
             <input
@@ -363,7 +363,7 @@ function StepPayee({
             />
             <span>
               <span className="block text-xl font-semibold">{p.displayName}</span>
-              <span className="block text-base text-slate-700">
+              <span className="block text-base text-ink-2">
                 {formatIban(p.iban)} · paid {p.timesPaid} time{p.timesPaid === 1 ? '' : 's'}
               </span>
             </span>
@@ -371,8 +371,8 @@ function StepPayee({
         ))}
 
         <label
-          className={`flex min-h-[64px] cursor-pointer items-center gap-4 rounded-xl border-2 bg-white p-4 ${
-            mode === 'new' ? 'border-blue-800 ring-2 ring-blue-300' : 'border-slate-300'
+          className={`flex min-h-[64px] cursor-pointer items-center gap-4 rounded-card border-2 bg-surface p-4 ${
+            mode === 'new' ? 'border-ink ring-2 ring-rule-2' : 'border-rule'
           }`}
         >
           <input
@@ -399,7 +399,7 @@ function StepPayee({
 
       {mode === 'new' ? (
         <div className="card space-y-4">
-          <p className="rounded-lg bg-blue-50 p-3">{COPY.wizard.steps[1].newPayeeNote}</p>
+          <p className="rounded-ctl bg-attend-bg p-3">{COPY.wizard.steps[1].newPayeeNote}</p>
           <div>
             <label htmlFor="payee-name" className="block font-semibold">
               {COPY.wizard.steps[1].nameLabel}
@@ -490,7 +490,7 @@ function StepPayee({
       ) : null}
 
       {error ? (
-        <p role="alert" className="font-semibold text-red-800">
+        <p role="alert" className="font-semibold text-danger">
           {error}
         </p>
       ) : null}
@@ -575,7 +575,7 @@ function StepAmount({
         <p id="amount-words" className="mt-2 text-lg">
           {cents ? amountInWords(cents) : 'Type an amount, or use the buttons below.'}
         </p>
-        <p id="amount-remaining" className="mt-1 text-slate-700">
+        <p id="amount-remaining" className="mt-1 text-ink-2">
           {COPY.wizard.steps[2].remaining}: <Money cents={Math.max(0, balance - (cents ?? 0))} />
         </p>
       </div>
@@ -601,7 +601,7 @@ function StepAmount({
       </div>
 
       {error ? (
-        <p role="alert" className="font-semibold text-red-800">
+        <p role="alert" className="font-semibold text-danger">
           {error}
         </p>
       ) : null}
@@ -663,8 +663,8 @@ function StepReason({
               key={category}
               className={`chip cursor-pointer ${
                 draft.reasonCategory === category
-                  ? 'border-blue-800 bg-blue-800 text-white'
-                  : 'border-slate-400 bg-white'
+                  ? 'border-ink bg-ink text-paper'
+                  : 'border-rule-2 bg-surface'
               }`}
             >
               <input
@@ -692,7 +692,7 @@ function StepReason({
           aria-describedby="reason-help"
           aria-invalid={error ? true : undefined}
         />
-        <p id="reason-help" className="mt-1 text-slate-700">
+        <p id="reason-help" className="mt-1 text-ink-2">
           {COPY.wizard.steps[3].textHelp}{' '}
           {draft.reasonCategory === 'other' && length > 0 && length < CONFIG.vagueReasonChars
             ? COPY.wizard.steps[3].vagueHint
@@ -701,7 +701,7 @@ function StepReason({
       </div>
 
       {error ? (
-        <p role="alert" className="font-semibold text-red-800">
+        <p role="alert" className="font-semibold text-danger">
           {error}
         </p>
       ) : null}
@@ -775,8 +775,8 @@ function StepSafety({
                 key={String(value)}
                 className={`chip flex-1 cursor-pointer justify-center ${
                   draft.safetyAnswers[question.key] === value
-                    ? 'border-blue-800 bg-blue-800 text-white'
-                    : 'border-slate-400 bg-white'
+                    ? 'border-ink bg-ink text-paper'
+                    : 'border-rule-2 bg-surface'
                 }`}
               >
                 <input
@@ -794,7 +794,7 @@ function StepSafety({
       ))}
 
       {error ? (
-        <p role="alert" className="font-semibold text-red-800">
+        <p role="alert" className="font-semibold text-danger">
           {error}
         </p>
       ) : null}

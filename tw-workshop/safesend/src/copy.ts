@@ -5,11 +5,11 @@ import type { ReasonCategory, RiskBand, ScamPattern } from './types';
 
 export const COPY = {
   app: {
-    name: 'SafeSend',
+    name: 'TrustPay',
     tagline: 'A second pair of eyes before your money leaves',
     demoBanner: 'DEMO ONLY — no real money moves and no real bank is connected.',
     riskDisclaimer:
-      'SafeSend is a demo. It can be wrong — always check with someone you trust.',
+      'TrustPay is a demo. It can be wrong — always check with someone you trust.',
   },
 
   people: {
@@ -18,13 +18,18 @@ export const COPY = {
     secondContact: { first: 'Jean', full: 'Jean Okafor' },
   },
 
+  /** Screens both personas share, so neither `sender` nor `approver` owns them. */
+  shared: {
+    transactionHistory: 'Transaction History',
+  },
+
   roles: {
     sender: 'Account holder',
     approver: 'Trusted contact',
   },
 
   landing: {
-    heading: 'SafeSend',
+    heading: 'TrustPay',
     intro:
       'A protective check between an account holder and money leaving their account. Choose who you want to be.',
     openBoth: 'Open both side by side',
@@ -51,7 +56,7 @@ export const COPY = {
     expiredHeading: 'David did not answer in time',
     questionHeading: 'David has a question for you',
     seeAll: 'See all payments',
-    whoHelpsMe: 'Who helps me',
+    whoHelpsMe: 'Trusted Person',
     isThisAScam: 'Is this a scam?',
     reportConcern: 'Report a concern',
     cancelPayment: 'Cancel this payment',
@@ -146,7 +151,7 @@ export const COPY = {
       'Shall we ring the number on your bank card together and check?',
     ],
     smsNoLinkNote:
-      'Our messages never contain a link and never ask for a code. That is how you can tell a real SafeSend message from a fake one.',
+      'Our messages never contain a link and never ask for a code. That is how you can tell a real TrustPay message from a fake one.',
     callNow: 'Call Margaret now',
   },
 
@@ -227,7 +232,7 @@ export const COPY = {
     heading: 'What to do now',
     points: [
       'Do not reply to them again, and do not answer if they ring back.',
-      'Expect another call. They may claim to be from your bank, the police, or SafeSend itself.',
+      'Expect another call. They may claim to be from your bank, the police, or TrustPay itself.',
       'Your bank will never ask you to move money to keep it safe, and never asks for your PIN or passcode.',
       'Change your online banking password, using the bank’s own app or website.',
       'Tell someone you trust what happened. None of this is your fault.',
