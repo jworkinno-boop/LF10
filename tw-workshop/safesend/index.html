@@ -1,0 +1,23 @@
+<!doctype html>
+<!-- data-theme is the default; theme-boot.js switches it to dark if stored. -->
+<html lang="en-GB" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="TrustPay — a demo of a protective approval layer for outgoing bank transfers. No real money moves." />
+    <meta name="robots" content="noindex, nofollow" />
+    <!-- Kept in step with the resolved theme by src/theme.tsx. -->
+    <meta name="theme-color" content="#f4f4f4" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>TrustPay (demo)</title>
+    <!-- Blocking on purpose: it applies a stored light/dark choice before the
+         first paint. Not inline, because the nginx CSP is `script-src 'self'`. -->
+    <script src="/theme-boot.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
