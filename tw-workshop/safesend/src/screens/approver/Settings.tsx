@@ -12,16 +12,6 @@ import type { Settings as SettingsType } from '../../types';
 
 const TOGGLES: Array<{ field: keyof SettingsType; label: string; help: string }> = [
   {
-    field: 'alwaysApproveNewPayees',
-    label: 'Always check payments to someone new',
-    help: 'Turning this off weakens protection, so it takes 24 hours.',
-  },
-  {
-    field: 'alwaysApproveCrossBorder',
-    label: 'Always check payments to another country',
-    help: 'Turning this off weakens protection, so it takes 24 hours.',
-  },
-  {
     field: 'blockCriticalOutright',
     label: 'Block the riskiest payments outright',
     help: 'Turning this on is instant. Turning it off takes 24 hours.',
@@ -159,6 +149,11 @@ export function Settings() {
 
         <section className="card space-y-4">
           <h2 className="text-xl">Checks</h2>
+          <p className="text-ink-2">
+            You are asked about a payment when it is above the checking amount, when it breaks the
+            daily amount, or when it looks suspicious. Everything else {COPY.people.sender.first}{' '}
+            sends herself.
+          </p>
           {TOGGLES.map((toggle) => (
             <div key={toggle.field} className="flex flex-wrap items-center justify-between gap-3">
               <div>

@@ -70,8 +70,10 @@ export function Helpers() {
           <h3 className="text-xl font-bold">Payments that get checked</h3>
           <p className="mt-2">
             Anything above <Money cents={state.settings.approvalThresholdCents} /> is checked, and so
-            is anything unusual. More than{' '}
+            is anything that looks suspicious. More than{' '}
             <Money cents={state.settings.dailyLimitCents} /> in one day is checked too.
+            Everything else you send yourself — if something merely looks unusual, we show you what
+            stood out and leave the decision with you.
           </p>
           <p className="mt-2 text-ink-2">
             You can always lower these amounts yourself, straight away. Raising them takes 24 hours

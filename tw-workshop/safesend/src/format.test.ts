@@ -10,8 +10,8 @@ describe('formatSettingsValue', () => {
   });
 
   it('says on/off rather than true/false', () => {
-    expect(formatSettingsValue('alwaysApproveNewPayees', true)).toBe('on');
-    expect(formatSettingsValue('blockCriticalOutright', false)).toBe('off');
+    expect(formatSettingsValue('blockCriticalOutright', true)).toBe('on');
+    expect(formatSettingsValue('secondContactActive', false)).toBe('off');
   });
 
   it('leaves non-money, non-boolean values alone', () => {

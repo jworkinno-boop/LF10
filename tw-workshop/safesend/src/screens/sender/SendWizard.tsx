@@ -11,14 +11,20 @@ import { iso, now } from '../../clock';
 import { amountInWords, formatIban, parseAmountToCents } from '../../format';
 import { assessRisk } from '../../risk/assessRisk';
 import { useApp } from '../../state/AppStateProvider';
-import { emptyDraft, draftIsComplete } from '../../state/reducer';
+import {
+  emptyDraft,
+  draftIsComplete,
+  safetyQuestionsRequired,
+} from '../../state/reducer';
 import { materialisePayee, countryFromIban } from '../../state/payees';
 import { riskContextFor, savedPayees, transferById } from '../../state/selectors';
 import { copLabel } from '../../data/mockCopDirectory';
 import { SELECTABLE_COUNTRIES, COUNTRY_NAMES } from '../../data/highRiskCountries';
-import type { ReasonCategory, TransferDraft } from '../../types';
+import type { ReasonCategory, RiskBand, TransferDraft } from '../../types';
 
-const TOTAL_STEPS = 5;
+const ALL_STEPS: number[] = [1, 2, 3, 4, 5];
+// Trusted payees skip the safety questions (step 4) and go straight to the review.
+const TRUSTED_STEPS: number[] = [1, 2, 3, 5];
 const CATEGORIES = Object.keys(COPY.categories) as ReasonCategory[];
 
 export function SendWizard() {
@@ -69,7 +75,9 @@ export function SendWizard() {
   // Assessment is computed and revealed at step 5 only — live scoring reads as
   // surveillance and teaches keyword avoidance.
   const assessment = useMemo(() => {
-    if (step !== 5 || !payee || !draftIsComplete(draft)) return null;
+    if (step !== 5 || !payee) return null;
+    if (!draftIsComplete(draft, { requireSafetyAnswers: safetyQuestionsRequired(payee) }))
+      return null;
     return assessRisk(
       {
         amountCents: draft.amountCents!,
@@ -89,34 +97,52 @@ export function SendWizard() {
 
   const balance = state.accounts.margaret.balanceCents ?? 0;
 
+  // Trusted payees skip the safety questions, so the wizard is one step shorter
+  // and the numbering has to follow.
+  const safetySkipped = !safetyQuestionsRequired(payee);
+  const steps = safetySkipped ? TRUSTED_STEPS : ALL_STEPS;
+  const stepLabel = (n: number) =>
+    COPY.wizard.stepOf(Math.max(1, steps.indexOf(n) + 1), steps.length);
+  const position = Math.max(1, steps.indexOf(step) + 1);
+
+  // Picking a trusted payee after reaching the questions moves past them.
+  useEffect(() => {
+    if (safetySkipped && step === 4) goTo(5);
+  }, [safetySkipped, step]);
+
   return (
     <AppShell persona="margaret" title={COPY.sender.sendMoney}>
       <div className="mx-auto w-full max-w-2xl space-y-6 lg:max-w-3xl">
-        <p className="font-semibold text-ink-2">
-          {COPY.wizard.stepOf(step, TOTAL_STEPS)}
-        </p>
+        <p className="font-semibold text-ink-2">{stepLabel(step)}</p>
         <div
           className="h-3 w-full overflow-hidden rounded-full bg-rule-2"
           role="progressbar"
-          aria-valuenow={step}
+          aria-valuenow={position}
           aria-valuemin={1}
-          aria-valuemax={TOTAL_STEPS}
+          aria-valuemax={steps.length}
           aria-label="Progress through sending money"
         >
           <div
             className="h-full bg-ink"
-            style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
+            style={{ width: `${(position / steps.length) * 100}%` }}
           />
         </div>
 
         {step === 1 ? (
-          <StepPayee draft={draft} heading={heading} patch={patch} onNext={() => goTo(2)} />
+          <StepPayee
+            draft={draft}
+            heading={heading}
+            stepLabel={stepLabel(1)}
+            patch={patch}
+            onNext={() => goTo(2)}
+          />
         ) : null}
         {step === 2 ? (
           <StepAmount
             draft={draft}
             balance={balance}
             heading={heading}
+            stepLabel={stepLabel(2)}
             patch={patch}
             onBack={() => goTo(1)}
             onNext={() => goTo(3)}
@@ -126,15 +152,20 @@ export function SendWizard() {
           <StepReason
             draft={draft}
             heading={heading}
+            stepLabel={stepLabel(3)}
             patch={patch}
             onBack={() => goTo(2)}
-            onNext={() => goTo(4)}
+            onNext={() => {
+              if (safetySkipped) setShowAssessment(false);
+              goTo(safetySkipped ? 5 : 4);
+            }}
           />
         ) : null}
-        {step === 4 ? (
+        {step === 4 && !safetySkipped ? (
           <StepSafety
             draft={draft}
             heading={heading}
+            stepLabel={stepLabel(4)}
             patch={patch}
             onBack={() => goTo(3)}
             onNext={() => {
@@ -146,7 +177,7 @@ export function SendWizard() {
         {step === 5 ? (
           <section className="space-y-5">
             <h2 ref={heading} tabIndex={-1} className="text-3xl">
-              {COPY.wizard.steps[5].title} — {COPY.wizard.stepOf(5, TOTAL_STEPS)}
+              {COPY.wizard.steps[5].title} — {stepLabel(5)}
             </h2>
 
             <dl className="card space-y-3">
@@ -176,27 +207,31 @@ export function SendWizard() {
               <div>
                 <dt className="font-semibold">Your reason</dt>
                 <dd>
-                  {draft.reasonCategory ? COPY.categories[draft.reasonCategory] : '—'} —{' '}
-                  “{draft.reasonText}”
+                  {draft.reasonCategory ? COPY.categories[draft.reasonCategory] : '—'}
+                  {draft.reasonText.trim() ? ` — “${draft.reasonText.trim()}”` : ''}
                 </dd>
               </div>
               <div>
                 <dt className="font-semibold">Safety questions</dt>
-                <dd>
-                  <ul className="mt-1 space-y-1">
-                    <li>
-                      {COPY.wizard.steps[4].q1} <b>{yesNo(draft.safetyAnswers.contactedFirst)}</b>
-                    </li>
-                    <li>
-                      {COPY.wizard.steps[4].q2}{' '}
-                      <b>{yesNo(draft.safetyAnswers.askedToKeepSecretOrHurry)}</b>
-                    </li>
-                    <li>
-                      {COPY.wizard.steps[4].q3}{' '}
-                      <b>{yesNo(draft.safetyAnswers.verifiedOnKnownNumber)}</b>
-                    </li>
-                  </ul>
-                </dd>
+                {safetySkipped ? (
+                  <dd>{COPY.wizard.steps[4].skippedTrusted}</dd>
+                ) : (
+                  <dd>
+                    <ul className="mt-1 space-y-1">
+                      <li>
+                        {COPY.wizard.steps[4].q1} <b>{yesNo(draft.safetyAnswers.contactedFirst)}</b>
+                      </li>
+                      <li>
+                        {COPY.wizard.steps[4].q2}{' '}
+                        <b>{yesNo(draft.safetyAnswers.askedToKeepSecretOrHurry)}</b>
+                      </li>
+                      <li>
+                        {COPY.wizard.steps[4].q3}{' '}
+                        <b>{yesNo(draft.safetyAnswers.verifiedOnKnownNumber)}</b>
+                      </li>
+                    </ul>
+                  </dd>
+                )}
               </div>
             </dl>
 
@@ -216,7 +251,9 @@ export function SendWizard() {
                 type="button"
                 className="btn-primary w-full"
                 onClick={() => setShowAssessment(true)}
-                disabled={!draftIsComplete(draft)}
+                disabled={
+                  !draftIsComplete(draft, { requireSafetyAnswers: !safetySkipped })
+                }
               >
                 Check this payment
               </button>
@@ -239,8 +276,12 @@ export function SendWizard() {
 
                 <div className="card space-y-4">
                   <p className="text-xl font-semibold">
-                    {outcomeLabel(assessment.requiresApproval, assessment.coolingOffMinutes,
-                      assessment.band === 'CRITICAL' && state.settings.blockCriticalOutright)}
+                    {outcomeLabel(
+                      assessment.requiresApproval,
+                      assessment.coolingOffMinutes,
+                      assessment.band === 'CRITICAL' && state.settings.blockCriticalOutright,
+                      assessment.band,
+                    )}
                   </p>
                   <button
                     type="button"
@@ -257,7 +298,11 @@ export function SendWizard() {
                       : COPY.wizard.steps[5].sendNow}
                   </button>
                   <div className="flex flex-wrap gap-4">
-                    <button type="button" className="btn-secondary" onClick={() => goTo(4)}>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => goTo(safetySkipped ? 3 : 4)}
+                    >
                       {COPY.wizard.back}
                     </button>
                     <button
@@ -292,9 +337,19 @@ function yesNo(value: boolean | null): string {
   return value ? 'Yes' : 'No';
 }
 
-function outcomeLabel(requiresApproval: boolean, hold: number, blocked: boolean): string {
+function outcomeLabel(
+  requiresApproval: boolean,
+  hold: number,
+  blocked: boolean,
+  band: RiskBand,
+): string {
   if (blocked) return COPY.wizard.steps[5].blocked;
-  if (!requiresApproval) return 'This can be sent straight away.';
+  // A second look is not an approval request: Margaret is told what stood out
+  // and then sends it herself.
+  if (!requiresApproval)
+    return band === 'LOW'
+      ? 'This can be sent straight away.'
+      : `Something stood out, so have a read above. ${COPY.people.approver.first} is not being asked — this one is yours to send.`;
   if (hold > 0)
     return `${COPY.people.approver.first} will check this. If he approves, it waits ${hold} minutes before it goes, so you can still change your mind.`;
   return `${COPY.people.approver.first} will check this before it is sent.`;
@@ -305,11 +360,13 @@ function outcomeLabel(requiresApproval: boolean, hold: number, blocked: boolean)
 function StepPayee({
   draft,
   heading,
+  stepLabel,
   patch,
   onNext,
 }: {
   draft: TransferDraft;
   heading: React.RefObject<HTMLHeadingElement>;
+  stepLabel: string;
   patch: (changes: Partial<TransferDraft>) => void;
   onNext: () => void;
 }) {
@@ -337,7 +394,7 @@ function StepPayee({
   return (
     <section className="space-y-5">
       <h2 ref={heading} tabIndex={-1} className="text-3xl">
-        {COPY.wizard.steps[1].title} — {COPY.wizard.stepOf(1, TOTAL_STEPS)}
+        {COPY.wizard.steps[1].title} — {stepLabel}
       </h2>
 
       <fieldset className="space-y-3">
@@ -510,6 +567,7 @@ function StepAmount({
   draft,
   balance,
   heading,
+  stepLabel,
   patch,
   onBack,
   onNext,
@@ -517,6 +575,7 @@ function StepAmount({
   draft: TransferDraft;
   balance: number;
   heading: React.RefObject<HTMLHeadingElement>;
+  stepLabel: string;
   patch: (changes: Partial<TransferDraft>) => void;
   onBack: () => void;
   onNext: () => void;
@@ -549,7 +608,7 @@ function StepAmount({
   return (
     <section className="space-y-5">
       <h2 ref={heading} tabIndex={-1} className="text-3xl">
-        {COPY.wizard.steps[2].title} — {COPY.wizard.stepOf(2, TOTAL_STEPS)}
+        {COPY.wizard.steps[2].title} — {stepLabel}
       </h2>
 
       <div>
@@ -623,25 +682,37 @@ function StepAmount({
 function StepReason({
   draft,
   heading,
+  stepLabel,
   patch,
   onBack,
   onNext,
 }: {
   draft: TransferDraft;
   heading: React.RefObject<HTMLHeadingElement>;
+  stepLabel: string;
   patch: (changes: Partial<TransferDraft>) => void;
   onBack: () => void;
   onNext: () => void;
 }) {
   const [error, setError] = useState('');
   const length = draft.reasonText.trim().length;
+  const hasWords = length >= CONFIG.minReasonChars;
 
+  // One of the two is enough: a category that fits, or the sender's own words.
   function next() {
     if (!draft.reasonCategory) {
-      setError('Please pick the closest reason.');
+      if (!hasWords) {
+        setError(COPY.wizard.steps[3].needOne);
+        return;
+      }
+      // Words without a category are recorded under "Other".
+      patch({ reasonCategory: 'other' });
+      setError('');
+      onNext();
       return;
     }
-    if (length < CONFIG.minReasonChars) {
+    // "Other" says nothing on its own, so it still needs the words.
+    if (draft.reasonCategory === 'other' && !hasWords) {
       setError(COPY.wizard.steps[3].textHelp);
       return;
     }
@@ -652,8 +723,9 @@ function StepReason({
   return (
     <section className="space-y-5">
       <h2 ref={heading} tabIndex={-1} className="text-3xl">
-        {COPY.wizard.steps[3].title} — {COPY.wizard.stepOf(3, TOTAL_STEPS)}
+        {COPY.wizard.steps[3].title} — {stepLabel}
       </h2>
+      <p>{COPY.wizard.steps[3].eitherOr}</p>
 
       <fieldset>
         <legend className="font-semibold">{COPY.wizard.steps[3].categoryLabel}</legend>
@@ -693,7 +765,9 @@ function StepReason({
           aria-invalid={error ? true : undefined}
         />
         <p id="reason-help" className="mt-1 text-ink-2">
-          {COPY.wizard.steps[3].textHelp}{' '}
+          {draft.reasonCategory && draft.reasonCategory !== 'other'
+            ? COPY.wizard.steps[3].optionalWords
+            : COPY.wizard.steps[3].textHelp}{' '}
           {draft.reasonCategory === 'other' && length > 0 && length < CONFIG.vagueReasonChars
             ? COPY.wizard.steps[3].vagueHint
             : null}
@@ -729,12 +803,14 @@ const QUESTIONS = [
 function StepSafety({
   draft,
   heading,
+  stepLabel,
   patch,
   onBack,
   onNext,
 }: {
   draft: TransferDraft;
   heading: React.RefObject<HTMLHeadingElement>;
+  stepLabel: string;
   patch: (changes: Partial<TransferDraft>) => void;
   onBack: () => void;
   onNext: () => void;
@@ -762,7 +838,7 @@ function StepSafety({
   return (
     <section className="space-y-5">
       <h2 ref={heading} tabIndex={-1} className="text-3xl">
-        {COPY.wizard.steps[4].title} — {COPY.wizard.stepOf(4, TOTAL_STEPS)}
+        {COPY.wizard.steps[4].title} — {stepLabel}
       </h2>
       <p>{COPY.wizard.steps[4].intro}</p>
 

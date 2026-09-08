@@ -25,7 +25,9 @@ describe('the send wizard', () => {
     expect(screen.getByRole('heading', { name: /Who are you paying\? — Step 1 of 5/ })).toBeInTheDocument();
     await completeStep1(user);
 
-    const heading = screen.getByRole('heading', { name: /How much\? — Step 2 of 5/ });
+    // Northgate Energy is a trusted payee, so the safety questions drop out and
+    // the wizard is four steps long.
+    const heading = screen.getByRole('heading', { name: /How much\? — Step 2 of 4/ });
     expect(heading).toBeInTheDocument();
     expect(document.activeElement).toBe(heading);
   });
@@ -42,7 +44,7 @@ describe('the send wizard', () => {
     expect(screen.getByRole('group', { name: 'Number keypad' })).toBeInTheDocument();
   });
 
-  it('will not pass step 3 without a category and ten characters', async () => {
+  it('will not pass step 3 with neither a category nor words', async () => {
     unlocked();
     const user = userEvent.setup();
     renderAt('/m/send');
@@ -51,15 +53,87 @@ describe('the send wizard', () => {
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
     await user.click(screen.getByRole('button', { name: 'Continue' }));
-    expect(screen.getByRole('alert')).toHaveTextContent('Please pick the closest reason.');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Please pick the closest reason, or tell us in your own words.',
+    );
+  });
+
+  it('passes step 3 on a category alone, with no words', async () => {
+    unlocked();
+    const user = userEvent.setup();
+    renderAt('/m/send');
+    await completeStep1(user);
+    await user.type(screen.getByLabelText('Amount in euros'), '62.40');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
 
     await user.click(screen.getByRole('radio', { name: 'Bill or utility' }));
-    await user.type(screen.getByLabelText('Tell us in your own words'), 'gas');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(
+      screen.getByRole('heading', { name: /Check and confirm — Step 4 of 4/ }),
+    ).toBeInTheDocument();
+  });
+
+  it('passes step 3 on the sender\'s own words alone, and records them as Other', async () => {
+    unlocked();
+    const user = userEvent.setup();
+    renderAt('/m/send');
+    await completeStep1(user);
+    await user.type(screen.getByLabelText('Amount in euros'), '62.40');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+    await user.type(
+      screen.getByLabelText('Or tell us in your own words'),
+      'Monthly electricity bill',
+    );
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(screen.getByText(/Other — “Monthly electricity bill”/)).toBeInTheDocument();
+  });
+
+  it('still asks for words when the category is Other', async () => {
+    unlocked();
+    const user = userEvent.setup();
+    renderAt('/m/send');
+    await completeStep1(user);
+    await user.type(screen.getByLabelText('Amount in euros'), '62.40');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+    await user.click(screen.getByRole('radio', { name: 'Other' }));
+    await user.type(screen.getByLabelText('Or tell us in your own words'), 'gas');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
     expect(screen.getByRole('alert')).toHaveTextContent('at least 10 characters');
+  });
 
-    await user.type(screen.getByLabelText('Tell us in your own words'), ' and electricity bill');
+  it('skips the safety questions for a trusted payee', async () => {
+    unlocked();
+    const user = userEvent.setup();
+    renderAt('/m/send');
+    await completeStep1(user);
+    await user.type(screen.getByLabelText('Amount in euros'), '62.40');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await user.click(screen.getByRole('radio', { name: 'Bill or utility' }));
+    await user.type(screen.getByLabelText('Or tell us in your own words'), 'Monthly electricity bill');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+    expect(screen.queryByRole('heading', { name: /Safety check/ })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /Check and confirm — Step 4 of 4/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Skipped — this payee is on your trusted list.'),
+    ).toBeInTheDocument();
+  });
+
+  it('still asks the safety questions for a payee who is not trusted', async () => {
+    unlocked();
+    const user = userEvent.setup();
+    renderAt('/m/send');
+    await user.click(screen.getByRole('radio', { name: /Rosewood Garden Care/ }));
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await user.type(screen.getByLabelText('Amount in euros'), '62.40');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await user.click(screen.getByRole('radio', { name: 'Repairs or tradesperson' }));
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+
     expect(screen.getByRole('heading', { name: /Safety check — Step 4 of 5/ })).toBeInTheDocument();
   });
 
@@ -72,7 +146,7 @@ describe('the send wizard', () => {
     await user.click(screen.getByRole('button', { name: 'Continue' }));
     await user.click(screen.getByRole('radio', { name: 'Other' }));
     await user.type(
-      screen.getByLabelText('Tell us in your own words'),
+      screen.getByLabelText('Or tell us in your own words'),
       'Move my money to a safe account, urgent',
     );
     expect(screen.queryByText(/This looks like a scam/)).not.toBeInTheDocument();
@@ -87,13 +161,7 @@ describe('the send wizard', () => {
     await user.type(screen.getByLabelText('Amount in euros'), '62.40');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
     await user.click(screen.getByRole('radio', { name: 'Bill or utility' }));
-    await user.type(screen.getByLabelText('Tell us in your own words'), 'Monthly electricity bill');
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
-
-    const questions = screen.getAllByRole('group');
-    await user.click(within(questions[0]).getByRole('radio', { name: 'No' }));
-    await user.click(within(questions[1]).getByRole('radio', { name: 'No' }));
-    await user.click(within(questions[2]).getByRole('radio', { name: 'Yes' }));
+    await user.type(screen.getByLabelText('Or tell us in your own words'), 'Monthly electricity bill');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
     await user.click(screen.getByRole('button', { name: 'Check this payment' }));
@@ -123,7 +191,7 @@ describe('the send wizard', () => {
 
     await user.click(screen.getByRole('radio', { name: 'Other' }));
     await user.type(
-      screen.getByLabelText('Tell us in your own words'),
+      screen.getByLabelText('Or tell us in your own words'),
       'Bank fraud department told me to move my money to a safe account today, urgent, do not tell anyone',
     );
     await user.click(screen.getByRole('button', { name: 'Continue' }));

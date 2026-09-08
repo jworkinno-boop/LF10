@@ -13,6 +13,12 @@ const REASSURING: SafetyAnswers = {
   verifiedOnKnownNumber: true,
 };
 
+const UNANSWERED: SafetyAnswers = {
+  contactedFirst: null,
+  askedToKeepSecretOrHurry: null,
+  verifiedOnKnownNumber: null,
+};
+
 function run(state: AppState, actions: Action[]): AppState {
   return actions.reduce(reducer, state);
 }
@@ -80,9 +86,8 @@ describe('submission', () => {
     const state = run(seedState(), [
       {
         type: 'DRAFT_PATCH',
-        patch: draft({
-          safetyAnswers: { contactedFirst: null, askedToKeepSecretOrHurry: null, verifiedOnKnownNumber: null },
-        }),
+        // payee_garden is not trusted, so the questions are asked and required.
+        patch: draft({ payeeId: 'payee_garden', safetyAnswers: UNANSWERED }),
       },
       { type: 'SUBMIT_TRANSFER', nowMs: NOW },
     ]);
@@ -90,9 +95,37 @@ describe('submission', () => {
     expect(state.lastError).toBeTruthy();
   });
 
-  it('has no bypass: a reason shorter than the minimum cannot be submitted', () => {
+  it('does not ask the safety questions for a trusted payee', () => {
+    // payee_energy is on the trusted list, so step 4 never runs for it.
+    const { state, transfer } = submitted({ safetyAnswers: UNANSWERED });
+    expect(state.transfers).toHaveLength(1);
+    expect(transfer.state).toBe('SENT');
+  });
+
+  it('takes a category on its own as a reason, with no words needed', () => {
+    const { transfer } = submitted({ reasonCategory: 'bill', reasonText: '' });
+    expect(transfer.state).toBe('SENT');
+  });
+
+  it('takes the sender\'s own words on their own, under "other"', () => {
+    const { transfer } = submitted({
+      reasonCategory: 'other',
+      reasonText: 'Monthly electricity bill',
+    });
+    expect(transfer.state).toBe('SENT');
+  });
+
+  it('has no bypass: "other" with too few words cannot be submitted', () => {
     const state = run(seedState(), [
-      { type: 'DRAFT_PATCH', patch: draft({ reasonText: 'bill' }) },
+      { type: 'DRAFT_PATCH', patch: draft({ reasonCategory: 'other', reasonText: 'bill' }) },
+      { type: 'SUBMIT_TRANSFER', nowMs: NOW },
+    ]);
+    expect(state.transfers).toHaveLength(0);
+  });
+
+  it('has no bypass: neither a category nor words cannot be submitted', () => {
+    const state = run(seedState(), [
+      { type: 'DRAFT_PATCH', patch: draft({ reasonCategory: undefined, reasonText: '' }) },
       { type: 'SUBMIT_TRANSFER', nowMs: NOW },
     ]);
     expect(state.transfers).toHaveLength(0);

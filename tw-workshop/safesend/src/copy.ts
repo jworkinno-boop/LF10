@@ -36,8 +36,8 @@ export const COPY = {
     howItWorks: 'How this demo works',
     howItWorksBody: [
       'Margaret can pay anyone she likes. Nothing is blocked because of who she is.',
-      'Every payment needs a reason in her own words.',
-      'Larger or unusual payments are passed to David to check first.',
+      'Every payment needs a reason — a category that fits, or her own words.',
+      'Payments above the agreed amount, and ones that look suspicious, are passed to David to check first.',
       'David can approve, reject, or ask a question. He can never move money himself.',
       'Margaret can stop the arrangement at any time. David cannot stop her leaving.',
     ],
@@ -86,13 +86,17 @@ export const COPY = {
       },
       3: {
         title: 'Why are you sending this money?',
+        eitherOr: 'You only need to do one of these two: pick the closest one, or tell us in your own words.',
         categoryLabel: 'Pick the closest one',
-        textLabel: 'Tell us in your own words',
+        textLabel: 'Or tell us in your own words',
         textHelp: 'Please write at least 10 characters.',
+        optionalWords: 'You have picked a reason, so this is optional.',
+        needOne: 'Please pick the closest reason, or tell us in your own words.',
         vagueHint: 'A little more detail helps David understand the payment.',
       },
       4: {
         title: 'Safety check',
+        skippedTrusted: 'Skipped — this payee is on your trusted list.',
         intro: 'Three quick questions. Your answers go to David exactly as you give them.',
         q1: 'Did someone contact you first about this payment?',
         q2: 'Has anyone asked you to keep this payment secret, or to hurry?',
@@ -252,7 +256,7 @@ export const COPY = {
     ],
     senderCannot: [
       'Raise the amount that needs checking on her own.',
-      'Skip the safety questions or the approval step.',
+      'Skip the approval step, or the safety questions where they are asked.',
     ],
     approverCan: [
       'See payments that need checking, with the reason and safety answers.',

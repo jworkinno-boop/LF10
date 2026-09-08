@@ -191,8 +191,6 @@ export type AuditEntry = {
 export type Settings = {
   approvalThresholdCents: number;
   dailyLimitCents: number;
-  alwaysApproveNewPayees: boolean;
-  alwaysApproveCrossBorder: boolean;
   blockCriticalOutright: boolean;
   secondContactActive: boolean;
 };

@@ -8,7 +8,8 @@
 //             min(CIRC_CAP, max(0, circumstantial + mitigation)) + behavioural)
 //
 // Circumstantial evidence alone therefore never reaches HIGH: an unusual but
-// honest payment gets an approval request, not a scam warning.
+// honest payment gets a second look, not a scam warning — and a second look
+// does not go to the approver unless the amount or the daily limit says so.
 
 import { CONFIG } from '../config';
 import { iso } from '../clock';
@@ -63,17 +64,16 @@ export function assessRisk(input: RiskInput, ctx: RiskContext): RiskAssessment {
   const score = Math.max(0, Math.min(100, circCapped + behavioural));
   const band = bandForScore(score);
 
+  // Ordinary payments go straight out. David is only asked when the payment is
+  // above the amount he and Margaret agreed to check, when it breaks the daily
+  // limit, or when the engine actually finds it suspicious (HIGH or above).
+  // MEDIUM is "worth a second look": Margaret is shown what stood out, and then
+  // the payment is hers to send.
   const overThreshold = input.amountCents > ctx.settings.approvalThresholdCents;
   const dailyLimitHit = additive.some((h) => h.ruleId === 'R18');
-  const isNewPayee = input.payee.timesPaid === 0;
-  const isCrossBorder = input.payee.countryCode !== ctx.accountCountry;
+  const suspicious = bandRank(band) >= bandRank('HIGH');
 
-  const requiresApproval =
-    band !== 'LOW' ||
-    overThreshold ||
-    dailyLimitHit ||
-    (ctx.settings.alwaysApproveNewPayees && isNewPayee) ||
-    (ctx.settings.alwaysApproveCrossBorder && isCrossBorder);
+  const requiresApproval = overThreshold || dailyLimitHit || suspicious;
 
   const reasons: RiskReason[] = [
     ...additive.map((h) => toReason(h)),

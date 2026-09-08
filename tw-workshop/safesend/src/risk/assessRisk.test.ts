@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assessRisk, bandForScore } from './assessRisk';
+import { assessRisk, bandForScore, bandRank } from './assessRisk';
 import { CONFIG } from '../config';
 import { DAY_MS, HOUR_MS, iso } from '../clock';
 import { ctx, input, NEUTRAL, newPayee, NOW, payee, REASSURING, ruleIds } from './testUtils';
@@ -410,16 +410,43 @@ describe('required action', () => {
     expect(a.requiresApproval).toBe(true);
   });
 
-  it('requires approval for a new payee when the setting is on', () => {
+  it('sends a small first payment to someone new without approval', () => {
+    // R01 and R02 still score it, so Margaret sees why it stood out — but a
+    // new payee on its own is not a reason to involve David.
     const a = assessRisk(input({ amountCents: 1_000, payee: newPayee() }), ctx());
-    expect(a.requiresApproval).toBe(true);
+    expect(ruleIds(a.reasons)).toContain('R01');
+    expect(a.requiresApproval).toBe(false);
   });
 
-  it('requires approval for a cross-border payee when the setting is on', () => {
+  it('does not ask David for a MEDIUM payment under the threshold', () => {
+    const a = assessRisk(
+      input({ amountCents: 1_000, payee: newPayee(), safetyAnswers: NEUTRAL }),
+      ctx(),
+    );
+    expect(a.band).toBe('MEDIUM');
+    expect(a.requiresApproval).toBe(false);
+  });
+
+  it('sends a small cross-border payment without approval', () => {
     const a = assessRisk(
       input({ amountCents: 1_000, payee: { ...payee('payee_energy'), countryCode: 'DE' } }),
       ctx(),
     );
+    expect(a.requiresApproval).toBe(false);
+  });
+
+  it('asks David for a small payment that looks suspicious', () => {
+    // Well under the threshold, so only the suspicion can be doing the work.
+    const a = assessRisk(
+      input({
+        amountCents: 1_000,
+        reasonCategory: 'other',
+        reasonText: 'Move my money to a safe account today, urgent, do not tell anyone',
+        safetyAnswers: { contactedFirst: true, askedToKeepSecretOrHurry: true, verifiedOnKnownNumber: false },
+      }),
+      ctx(),
+    );
+    expect(bandRank(a.band)).toBeGreaterThanOrEqual(bandRank('HIGH'));
     expect(a.requiresApproval).toBe(true);
   });
 

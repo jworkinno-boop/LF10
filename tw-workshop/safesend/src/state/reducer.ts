@@ -342,25 +342,6 @@ export function changePolicy(
             label: `Lower the daily amount to ${formatMoney(Number(newValue))}`,
           };
     }
-    case 'alwaysApproveNewPayees':
-    case 'alwaysApproveCrossBorder': {
-      const weakening = newValue === false;
-      const name =
-        field === 'alwaysApproveNewPayees' ? 'always check new payees' : 'always check payments abroad';
-      return weakening
-        ? {
-            allowed: ['david'],
-            delayed: true,
-            cancellableBy: ['margaret', 'david'],
-            label: `Turn off "${name}"`,
-          }
-        : {
-            allowed: ['margaret', 'david'],
-            delayed: false,
-            cancellableBy: [],
-            label: `Turn on "${name}"`,
-          };
-    }
     case 'blockCriticalOutright': {
       const strengthening = newValue === true;
       return strengthening
@@ -426,29 +407,60 @@ function resolvePayee(state: AppState, draft: TransferDraft, atIso: string): Pay
   return null;
 }
 
-export function draftIsComplete(draft: TransferDraft): boolean {
+/**
+ * The reason step asks for one of two things, not both: a category that fits,
+ * or the sender's own words. "Other" is not a category on its own, so it still
+ * needs the words.
+ */
+export function reasonIsGiven(draft: TransferDraft): boolean {
+  const words = draft.reasonText.trim().length >= CONFIG.minReasonChars;
+  if (!draft.reasonCategory) return false;
+  return draft.reasonCategory === 'other' ? words : true;
+}
+
+export function safetyAnswersGiven(draft: TransferDraft): boolean {
   const a = draft.safetyAnswers;
+  return (
+    a.contactedFirst !== null &&
+    a.askedToKeepSecretOrHurry !== null &&
+    a.verifiedOnKnownNumber !== null
+  );
+}
+
+/**
+ * Payments to a payee the approver has marked as trusted skip the safety
+ * questions, so their answers are not required for those.
+ */
+export function safetyQuestionsRequired(payee: Pick<Payee, 'status'> | null): boolean {
+  return payee?.status !== 'trusted';
+}
+
+export function draftIsComplete(
+  draft: TransferDraft,
+  options: { requireSafetyAnswers?: boolean } = {},
+): boolean {
+  const requireSafetyAnswers = options.requireSafetyAnswers ?? true;
   return Boolean(
     (draft.payeeId || draft.newPayee) &&
       draft.amountCents &&
       draft.amountCents > 0 &&
-      draft.reasonCategory &&
-      draft.reasonText.trim().length >= CONFIG.minReasonChars &&
-      a.contactedFirst !== null &&
-      a.askedToKeepSecretOrHurry !== null &&
-      a.verifiedOnKnownNumber !== null,
+      reasonIsGiven(draft) &&
+      (!requireSafetyAnswers || safetyAnswersGiven(draft)),
   );
 }
 
 function submit(state: AppState, nowMs: number): AppState {
   const draft = state.draft;
   if (!draft) return fail(state, 'There is no payment to send.');
-  // No bypass: an incomplete safety check can never produce a transfer.
-  if (!draftIsComplete(draft)) return fail(state, 'Please finish all five steps first.');
+  if (!draftIsComplete(draft, { requireSafetyAnswers: false }))
+    return fail(state, 'Please finish every step first.');
 
   const atIso = iso(nowMs);
   const payee = resolvePayee(state, draft, atIso);
   if (!payee) return fail(state, 'We could not find who you are paying.');
+  // No bypass: where the safety questions are asked, they must be answered.
+  if (safetyQuestionsRequired(payee) && !safetyAnswersGiven(draft))
+    return fail(state, 'Please answer the safety questions first.');
 
   const risk = assessRisk(
     {

@@ -16,7 +16,7 @@ docker compose up --build
 
 Then open **http://localhost:3100**.
 
-That builds the app, runs the type-check and all 123 tests inside the image
+That builds the app, runs the type-check and all 141 tests inside the image
 (a failing test fails the build), and serves the static bundle with nginx
 listening on port 3100. Health check: `http://localhost:3100/healthz`.
 
@@ -61,6 +61,27 @@ session timeout anywhere, and drafts resume exactly where they were left.
 
 ---
 
+## Who gets asked
+
+Ordinary payments never leave Margaret's hands. David is asked in exactly three
+cases:
+
+| Trigger | Example |
+| --- | --- |
+| Above the agreed checking amount | more than €500 |
+| The rolling 24-hour total breaks the daily limit (R18) | three €480 payments in an afternoon |
+| The band is **HIGH** or **CRITICAL** | a scam signal fired |
+
+**MEDIUM** — “worth a second look” — is *not* an approval request. Margaret is
+shown every reason in plain language and then sends it herself. A first payment
+to someone new, or one to another country, scores points (R01, R02, R11) and can
+land here, but on its own it does not involve David.
+
+Payees David has marked as **trusted** also skip the safety-questions step of
+the wizard.
+
+---
+
 ## Three scripted walkthroughs
 
 A non-technical reviewer can follow these end to end. Each takes about two
@@ -76,13 +97,15 @@ between runs.
 3. **Step 1** — choose **Northgate Energy**, press Continue.
 4. **Step 2** — type `62.40`. The amount is read back in words and the
    remaining balance updates. Press Continue.
-5. **Step 3** — choose **Bill or utility** and type
-   `Monthly electricity bill`. Press Continue.
-6. **Step 4** — answer **No**, **No**, **Yes**. Press Continue.
-7. **Step 5** — press **Check this payment**.
+5. **Step 3** — choose **Bill or utility**. That is enough on its own; the
+   free-text box is optional once a category is picked. Press Continue.
+6. **Step 4** — Northgate Energy is on David's trusted list, so the safety
+   questions are skipped and you land straight on the review, which says so.
+   The wizard shows **four** steps for a trusted payee, five otherwise.
+   Press **Check this payment**.
    You should see **“Looks normal”**, no scam explainer, no alarming language,
    and *“This can be sent straight away.”*
-8. Press **Send now**. The payment goes immediately. David is never involved.
+7. Press **Send now**. The payment goes immediately. David is never involved.
 
 Expected risk: LOW, score 0.
 
@@ -97,6 +120,8 @@ be bypassed.*
 3. **Step 2** — `4500`. Continue.
 4. **Step 3** — choose **Other**, and type:
    `Bank fraud department told me to move my money to a safe account today, urgent, do not tell anyone`
+   **Other** is the one category that still needs the words. Typing the words
+   without picking anything works too — it is recorded as *Other*.
    Note that **nothing is scored while you type**. Continue.
 5. **Step 4** — answer **Yes**, **Yes**, **No**. Continue.
 6. **Step 5** — press **Check this payment**.
@@ -129,8 +154,9 @@ as a pattern.*
 2. Press **Check this payment**.
    The third one fires **R04** (much larger than usual), **R09** (three payments
    to the same payee in 24 hours) and **R18** (over the daily amount), reaching
-   **MEDIUM** and forcing approval — even though each payment on its own is
-   under the €500 checking amount.
+   **MEDIUM**. R18 is what sends it to David — even though each payment on its
+   own is under the €500 checking amount. (MEDIUM on its own does not: see
+   *Who gets asked* below.)
 3. Load the scenario again and step through the first two payments manually
    if you want to see them both send without any friction.
 

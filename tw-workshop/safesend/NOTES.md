@@ -71,7 +71,7 @@ Three additions, all in `src/config.ts` under `caps`:
 
 | Addition | Value | Why |
 | --- | --- | --- |
-| Circumstantial cap | 45 | Circumstance alone can never reach HIGH. An unusual but honest payment gets an approval request, not a scam warning. Reaching HIGH requires a scam signal. |
+| Circumstantial cap | 45 | Circumstance alone can never reach HIGH. An unusual but honest payment gets a second look, not a scam warning. Reaching HIGH requires a scam signal — and HIGH is what involves the approver. |
 | Mitigation cap | −25 | Mitigators soften a score; they must never erase one. Without this, familiarity cancels a velocity/limit pattern outright. |
 | R04 baseline excludes the last 24 hours | — | If “your usual payments” absorbs today's outliers, an attacker re-baselines what counts as normal within a single day — and threshold splitting stops firing on the third payment, which is precisely the case the brief wants caught. |
 
@@ -130,8 +130,18 @@ scenario. `src/risk/falsePositives.test.ts` is that table as executable tests.
 
 - Locale `en-GB`, currency EUR, time zone `Europe/Amsterdam`, account country
   `NL`. All in `src/config.ts`.
-- Approval threshold €500, daily limit €1,000, “always check new payees” on,
-  “always check cross-border” on, “block CRITICAL outright” off.
+- Approval threshold €500, daily limit €1,000, “block CRITICAL outright” off.
+- **The approver is asked for three reasons only**: the amount is above the
+  agreed checking amount, the rolling 24h total breaks the daily limit, or the
+  band is HIGH or CRITICAL. MEDIUM — “worth a second look” — is shown to the
+  sender in full and then sent by her. Ordinary payments never leave her hands.
+  Blanket “always check new payees” and “always check cross-border” settings
+  were removed: a first payment to someone new still scores R01 + R02 and a
+  cross-border one still scores R11, so the amount and the score decide, and a
+  €10 payment to a new payee no longer needs a phone call. The trade-off is
+  explicit: a small, calm, well-worded first payment to a mule account can now
+  go without the approver seeing it. The alternative trained both people to
+  treat approval requests as noise, which is worse.
 - The high-risk country list is fictional (`XA`, `XB`, `XC`). It exists to
   exercise R12 and is not a statement about any real country.
 - Unknown IBANs return `unavailable` from the mock Confirmation-of-Payee
@@ -230,7 +240,7 @@ No analytics. No backend. No auth library.
   "ring them") and a decorative icon must not borrow them.
 - `/m/activity` is one column, newest first, and not a wrapping grid. In a grid
   the reading order of a statement changed with the window width.
-- `CONFIG.storageKey` is `trustpay.state.v2`. Bumping it is how every stored
+- `CONFIG.storageKey` is `trustpay.state.v3`. Bumping it is how every stored
   demo stat — the checking amount, the daily limit, the balance, the ledger —
   was reset back to `CONFIG.defaults`: a new key reseeds instead of migrating.
   For a demo whose whole job is to show a seeded scenario that is the right

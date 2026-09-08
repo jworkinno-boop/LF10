@@ -6,20 +6,21 @@ export const CONFIG = {
   timeZone: 'Europe/Amsterdam',
   bankName: 'Northgate Bank (demo)',
   appDomain: 'trustpay.example',
-  /** Bumped to v2 to reset every stored demo stat — the checking amount, the
+  /** Bumped to v3 to reset every stored demo stat — the checking amount, the
       daily limit and the rest — back to `defaults` below. A new key reseeds
       rather than migrating, which is the point: this is a demo, and its
-      seeded scenario is what it is meant to show. */
-  storageKey: 'trustpay.state.v2',
+      seeded scenario is what it is meant to show. v3 matters in particular
+      because a stored checking amount survives a rebuild: someone who had
+      lowered it to €100 would keep seeing "Ask David" on ordinary payments
+      long after the approval policy changed. */
+  storageKey: 'trustpay.state.v3',
   schemaVersion: 1 as const,
   broadcastChannel: 'trustpay',
-  engineVersion: '2.0.0',
+  engineVersion: '2.1.0',
 
   defaults: {
     approvalThresholdCents: 50_000,
     dailyLimitCents: 100_000,
-    alwaysApproveNewPayees: true,
-    alwaysApproveCrossBorder: true,
     blockCriticalOutright: false,
     secondContactActive: false,
   },
