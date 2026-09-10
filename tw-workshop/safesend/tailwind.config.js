@@ -87,6 +87,19 @@ export default {
         card: '0 1px 2px var(--c-shadow), 0 1px 12px -6px var(--c-shadow)',
         lift: '0 2px 4px var(--c-shadow), 0 12px 28px -12px var(--c-shadow)',
       },
+      keyframes: {
+        // The live step on a payment's timeline, and nothing else. A slow
+        // opacity breathe rather than a pulse or a spinner: it says "still
+        // running" without asking to be looked at. Removed wholesale by the
+        // prefers-reduced-motion block in index.css.
+        breathe: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.45' },
+        },
+      },
+      animation: {
+        breathe: 'breathe 2.4s ease-in-out infinite',
+      },
       backgroundImage: {
         // The brand gradient, used sparingly: hero wash and the header rule.
         'brand-sweep': 'linear-gradient(96deg, var(--c-brand-grad-a), var(--c-brand-grad-b), var(--c-brand-grad-c))',

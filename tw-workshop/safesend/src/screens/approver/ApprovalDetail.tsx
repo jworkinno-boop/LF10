@@ -106,24 +106,28 @@ export function ApprovalDetail() {
           <blockquote className="mt-2 border-l-4 border-rule-2 pl-4 text-lg">
             “{transfer.reasonText}”
           </blockquote>
+          {/* She is no longer asked to categorise before she narrates, so the
+              category is worked out from her words — and says so here rather
+              than passing itself off as her own answer. */}
           <p className="mt-2 text-sm text-ink-2">
             Category: {COPY.categories[transfer.reasonCategory]}
+            {transfer.reasonCategoryDerived ? ' (worked out from her words, not chosen by her)' : ''}
           </p>
 
           <h3 className="mt-4 font-semibold">Safety check answers, word for word</h3>
           <dl className="mt-2 space-y-2">
             <div>
-              <dt>{COPY.wizard.steps[4].q1}</dt>
+              <dt>{COPY.wizard.steps[3].q1}</dt>
               <dd className="font-bold">{answer(transfer.safetyAnswers.contactedFirst)}</dd>
             </div>
             <div>
-              <dt>{COPY.wizard.steps[4].q2}</dt>
+              <dt>{COPY.wizard.steps[3].q2}</dt>
               <dd className="font-bold">
                 {answer(transfer.safetyAnswers.askedToKeepSecretOrHurry)}
               </dd>
             </div>
             <div>
-              <dt>{COPY.wizard.steps[4].q3}</dt>
+              <dt>{COPY.wizard.steps[3].q3}</dt>
               <dd className="font-bold">{answer(transfer.safetyAnswers.verifiedOnKnownNumber)}</dd>
             </div>
           </dl>

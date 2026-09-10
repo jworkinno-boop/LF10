@@ -256,6 +256,19 @@ No analytics. No backend. No auth library.
 - `prefers-reduced-motion: reduce` removes all non-essential motion, including
   the hold countdown.
 
+- The sender's risk panel ranks rather than truncates. Under five reasons it is
+  a plain list; five or more is a wall, so `groupSenderReasons` folds them into
+  the three named groups (what you were told · who got in touch · where the
+  money would go) as real `h3`s, with every string still there behind a
+  `<details>` that announces its own expanded state. Rules outside the three
+  named families — the amount-and-pattern ones — trail the third group as a
+  sentence instead of earning a heading they cannot fill.
+- The cooling-off ring is the only animation in the product, and it has no
+  timer. `now()` is frozen, so the ring is derived state that re-renders on the
+  provider's 15-second tick; the sweep is a CSS transition on
+  `stroke-dashoffset`, which the reduced-motion block removes without removing
+  the number.
+
 `jest-axe` runs over all 14 routes in `src/a11y.test.tsx`. Automated checks
 catch perhaps a third of real accessibility problems; a manual keyboard and
 screen-reader pass is still required before anyone calls this AA.

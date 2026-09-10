@@ -266,6 +266,12 @@
            hover:bg-ok-hover sm:text-[26px];
   }
 
+  /* Urgent, but not a "go": "Ring David now" on the result screen. Green there
+     would read as approval of the payment. */
+  .btn-neutral {
+    @apply btn border-0 bg-ink text-paper hover:bg-ink-2;
+  }
+
   .field {
     @apply w-full min-h-[52px] rounded-ctl border-[1.5px] border-rule-2 bg-surface px-4 py-3
            text-lg text-ink placeholder:text-ink-3;
@@ -293,6 +299,13 @@
   .card-ok {
     @apply rounded-card border border-ok-border border-l-[5px] border-l-ok bg-ok-bg p-5;
   }
+  /* "Something is actually wrong": a rejection, a block. Same shape as
+     `.card-attend` so the two read as one family, but red-edged and on
+     `surface` — the full `.card-danger` wash below is for the confirm dialog,
+     not for a page someone has to sit and read. */
+  .card-stopped {
+    @apply rounded-card border border-danger-border border-l-[5px] border-l-danger bg-surface p-5 shadow-card;
+  }
   /* "Ring them": one step past attend. */
   .card-high {
     @apply rounded-card border-2 border-high bg-high-bg p-5;
@@ -309,6 +322,62 @@
   }
   .row-split {
     @apply flex items-center justify-between gap-4 border-t border-rule pt-[18px];
+  }
+
+  /* Three destinations, always visible, on every one of Margaret's screens —
+     icon above word, the whole tile the target. */
+  .nav-tile {
+    @apply flex min-h-[76px] w-full cursor-pointer flex-col items-center justify-center gap-1
+           rounded-ctl border-2 px-2 text-center text-base font-semibold transition-colors;
+  }
+  .nav-tile-off {
+    @apply nav-tile border-rule bg-surface text-ink-2 hover:bg-paper hover:text-ink;
+  }
+  .nav-tile-on {
+    @apply nav-tile border-ink bg-ink text-paper;
+  }
+
+  /* Whole-rectangle targets. The rule on Margaret's side: if it can be tapped,
+     its whole rectangle is the target — never a link nested inside a card. */
+  .row-target {
+    @apply flex min-h-[88px] w-full cursor-pointer items-center gap-4 px-5 py-4 text-left
+           transition-colors hover:bg-paper;
+  }
+  .option-card {
+    @apply flex min-h-[92px] w-full cursor-pointer items-center gap-4 rounded-card border-2
+           border-rule bg-surface px-5 py-4 text-left transition-colors hover:bg-paper;
+  }
+  /* Selected. Never colour alone: the label also goes semibold and gains a tick. */
+  .option-card-sel {
+    @apply option-card border-ok bg-surface ring-[3px] ring-ok-border;
+  }
+
+  /* Big, and consistently big — but only on Margaret's side. David's screens
+     keep their 16px density until that redesign is settled (handoff §9), so
+     every size increase is scoped to `.simple-mode` rather than to the base
+     class. These are class+class selectors (0,2,0) and so outrank both the
+     base component class and any single utility class in the markup. */
+  .simple-mode .btn {
+    @apply min-h-[68px] gap-3 px-7 text-xl;
+  }
+  .simple-mode .btn-huge {
+    @apply min-h-[96px] text-3xl;
+  }
+  .simple-mode .field {
+    @apply min-h-[68px] text-xl;
+  }
+  .simple-mode .chip {
+    @apply min-h-[64px] text-lg;
+  }
+  /* Sizing utilities in the markup lose to the rules above (0,2,0 beats
+     0,1,0), which is why the two oversized "Ring David" buttons carry the
+     `!` important modifier rather than a plain `min-h-[80px]`. */
+
+  /* The amount she is typing is the biggest thing on that step. It has to sit
+     after `.simple-mode .field` above: same specificity (0,2,0), so source
+     order is what decides. */
+  .simple-mode .field-amount {
+    @apply min-h-[84px] text-[40px] font-medium;
   }
 
   /* The one place the brand gradient is allowed to run full width: a 3px rule

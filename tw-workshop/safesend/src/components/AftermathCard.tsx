@@ -4,8 +4,12 @@ import { Link } from 'react-router-dom';
 /** Shown to both parties after a scam rejection. Scammers escalate after a block. */
 export function AftermathCard({ showReportLink = true }: { showReportLink?: boolean }) {
   return (
-    <section className="rounded-card border-2 border-attend-border bg-attend-bg p-5" aria-labelledby="aftermath-heading">
-      <h2 id="aftermath-heading" className="text-xl font-bold text-ink">
+    /* `card-high`, not `card-attend`: amber means "this needs a person" and
+       something is already waiting. This card is the register past that — the
+       scam did not end when the payment was stopped, and the next call is the
+       one to be ready for. */
+    <section className="card-high" aria-labelledby="aftermath-heading">
+      <h2 id="aftermath-heading" className="text-xl font-bold text-high">
         {COPY.aftermath.heading}
       </h2>
       <ul className="mt-3 space-y-2 text-ink">

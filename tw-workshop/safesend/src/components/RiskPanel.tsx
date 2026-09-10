@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { COPY } from '../copy';
-import { senderReassurances, senderReasons } from '../risk/assessRisk';
+import { groupSenderReasons, senderReassurances, senderReasons } from '../risk/assessRisk';
 import { RiskBadge, BAND_PANEL_STYLES } from './RiskBadge';
 import type { RiskAssessment } from '../types';
 
@@ -38,6 +38,9 @@ export function SenderRiskPanel({
 
   const reasons = senderReasons(assessment);
   const reassurances = senderReassurances(assessment);
+  // Under five reasons is a list she can read; five or more is a wall, and a
+  // wall gets ranked into the three named groups instead (handoff §5.5).
+  const grouped = reasons.length >= 5 ? groupSenderReasons(assessment) : null;
 
   return (
     <section
@@ -54,7 +57,30 @@ export function SenderRiskPanel({
         <RiskBadge band={assessment.band} />
       </div>
 
-      {reasons.length > 0 ? (
+      {grouped ? (
+        <div className="mt-4 space-y-5">
+          {grouped.map((group) => (
+            <div key={group.key}>
+              {/* Real headings, not styled paragraphs: this is how a screen
+                  reader user gets the same three-part story she does. */}
+              <h3 className="text-lg font-semibold">{COPY.risk.groups[group.key]}</h3>
+              {group.reasons.length > 0 ? (
+                <ul className="mt-2 space-y-2">
+                  {group.reasons.map((reason) => (
+                    <li key={reason.ruleId} className="flex gap-2">
+                      <span aria-hidden="true">•</span>
+                      <span>{reason.plainLanguage}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              {group.trailing.length > 0 ? (
+                <p className="mt-2">{group.trailing.map((r) => r.plainLanguage).join(' ')}</p>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : reasons.length > 0 ? (
         <ul className="mt-4 space-y-2">
           {reasons.map((reason) => (
             <li key={reason.ruleId} className="flex gap-2">
@@ -66,6 +92,24 @@ export function SenderRiskPanel({
       ) : (
         <p className="mt-4">{COPY.risk.noReasons}</p>
       )}
+
+      {/* Ranked, never hidden. Every string the engine produced for her stays
+          one tap away, and <details> announces its own expanded state. */}
+      {grouped ? (
+        <details className="mt-4">
+          <summary className="link cursor-pointer list-item">
+            {COPY.risk.everyDetail(reasons.length)}
+          </summary>
+          <ul className="mt-3 space-y-2">
+            {reasons.map((reason) => (
+              <li key={reason.ruleId} className="flex gap-2">
+                <span aria-hidden="true">•</span>
+                <span>{reason.plainLanguage}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
 
       {/* The one place today's UI already had a positive state: it gets the
           green card, because "this looked normal" is settled. */}

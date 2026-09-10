@@ -31,6 +31,9 @@ export type Payee = {
   addedAt: string;
   lastPaidAt?: string;
   timesPaid: number;
+  /** Plain language, for the sender's own screens: "Your electricity". The
+   *  IBAN is what the bank needs; this is what she recognises. */
+  plainLabel?: string;
   copResult?: CopResult;
   copNameOnAccount?: string;
   /** Added by the approver under the 24h rule; the sender may revoke at any time. */
@@ -108,6 +111,10 @@ export type Transfer = {
   amountCents: number;
   currency: 'EUR';
   reasonCategory: ReasonCategory;
+  /** True when nobody picked the category: it was worked out from her own
+   *  words at submission. David's screen says so — it is never a silent
+   *  hidden field. */
+  reasonCategoryDerived?: boolean;
   reasonText: string;
   safetyAnswers: SafetyAnswers;
   risk: RiskAssessment;
@@ -129,12 +136,18 @@ export type Transfer = {
   expiresAt?: string;
 };
 
-/** A transfer being built in the 5-step wizard. */
+/**
+ * A transfer being built in the wizard: three steps — who, how much and why,
+ * safety questions — and then the review, which is not a numbered step.
+ * `step` 4 is that review; 5 is accepted only because a draft persisted by an
+ * earlier five-step build can still be in localStorage, and is treated as 4.
+ */
 export type TransferDraft = {
   step: 1 | 2 | 3 | 4 | 5;
   payeeId?: string;
   newPayee?: { displayName: string; iban: string; countryCode: string; save: boolean };
   amountCents: number | null;
+  /** Null until submission, where it is derived from `reasonText`. */
   reasonCategory: ReasonCategory | null;
   reasonText: string;
   safetyAnswers: SafetyAnswers;

@@ -11,6 +11,7 @@ import { iso, parse, plusHours, plusMinutes } from '../clock';
 import { formatMoney, formatSettingsValue } from '../format';
 import { id, referenceCode } from '../ids';
 import { assessRisk, bandRank } from '../risk/assessRisk';
+import { deriveReasonCategory } from './reasonCategory';
 import { materialisePayee } from './payees';
 import { buildNotification } from './notifications';
 import { riskContextFor } from './selectors';
@@ -408,13 +409,16 @@ function resolvePayee(state: AppState, draft: TransferDraft, atIso: string): Pay
 }
 
 /**
- * The reason step asks for one of two things, not both: a category that fits,
- * or the sender's own words. "Other" is not a category on its own, so it still
- * needs the words.
+ * The reason is the sender's own words. The category chips are gone from the
+ * wizard, so a draft normally arrives with no category at all and the words
+ * carry it; the category is derived from them at submission.
+ *
+ * A category set some other way (a resubmission, or a seeded scenario) is still
+ * honoured, and "other" is not a category on its own, so it still needs words.
  */
 export function reasonIsGiven(draft: TransferDraft): boolean {
   const words = draft.reasonText.trim().length >= CONFIG.minReasonChars;
-  if (!draft.reasonCategory) return false;
+  if (!draft.reasonCategory) return words;
   return draft.reasonCategory === 'other' ? words : true;
 }
 
@@ -462,10 +466,15 @@ function submit(state: AppState, nowMs: number): AppState {
   if (safetyQuestionsRequired(payee) && !safetyAnswersGiven(draft))
     return fail(state, 'Please answer the safety questions first.');
 
+  // Nobody picked a category, so it is worked out from her own words — and the
+  // transfer records that it was derived, so David's screen can say so.
+  const derived = draft.reasonCategory === null;
+  const reasonCategory = draft.reasonCategory ?? deriveReasonCategory(draft.reasonText);
+
   const risk = assessRisk(
     {
       amountCents: draft.amountCents!,
-      reasonCategory: draft.reasonCategory!,
+      reasonCategory,
       reasonText: draft.reasonText,
       safetyAnswers: draft.safetyAnswers,
       payee,
@@ -489,7 +498,8 @@ function submit(state: AppState, nowMs: number): AppState {
     payee,
     amountCents: draft.amountCents!,
     currency: 'EUR',
-    reasonCategory: draft.reasonCategory!,
+    reasonCategory,
+    ...(derived ? { reasonCategoryDerived: true } : {}),
     reasonText: draft.reasonText.trim(),
     safetyAnswers: draft.safetyAnswers,
     risk,
@@ -580,7 +590,8 @@ export function reducer(state: AppState, action: Action): AppState {
           };
         }
         draft.amountCents = prior.amountCents;
-        draft.reasonCategory = prior.reasonCategory;
+        // The category is deliberately not carried over: it is derived from the
+        // words she writes this time, not from the ones that were rejected.
         draft.priorReasonText = prior.reasonText;
       }
       return bump({ ...state, draft });

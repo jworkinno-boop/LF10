@@ -49,7 +49,9 @@ export function diffWords(before: string, after: string): Token[] {
 export function ReasonDiff({ before, after }: { before: string; after: string }) {
   const tokens = diffWords(before, after);
   return (
-    <div className="rounded-ctl border-2 border-rule-2 bg-surface p-3">
+    /* A panel inside a card, so it takes the quieter ground and a hairline —
+       a second 2px border nested in a card reads as a second card. */
+    <div className="rounded-ctl border border-rule bg-surface-2 p-4">
       <p className="mb-2 text-sm font-semibold text-ink-2">
         Wording before and after (removed, added)
       </p>

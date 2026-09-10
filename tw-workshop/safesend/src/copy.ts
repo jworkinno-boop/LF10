@@ -60,42 +60,48 @@ export const COPY = {
     isThisAScam: 'Is this a scam?',
     reportConcern: 'Report a concern',
     cancelPayment: 'Cancel this payment',
+    ringApprover: 'Ring David',
+    holdCancel: 'Stop it before it goes',
   },
 
   wizard: {
     stepOf: (n: number, total: number) => `Step ${n} of ${total}`,
     back: 'Back',
     next: 'Continue',
+    stop: 'Stop',
+    stopConfirm: {
+      title: 'Stop this payment?',
+      confirm: 'Yes, stop it',
+      body: 'Nothing has left your account. You can start again whenever you like.',
+    },
     steps: {
       1: {
         title: 'Who are you paying?',
         newPayee: 'Someone new',
-        newPayeeNote: 'New payees get an extra safety check. This is normal.',
+        newPayeeNote: 'We will ask a few extra questions. That is normal.',
+        neverPaid: 'Someone you have not paid before',
+        paidTimes: (n: number) => `paid ${n} time${n === 1 ? '' : 's'}`,
         nameLabel: 'Their name',
         ibanLabel: 'Their account number (IBAN)',
         countryLabel: 'Country of the account',
         saveLabel: 'Save them in my address book',
       },
+      // Amount and reason are one thought — "€4,500 for the boiler" — so they
+      // share a step rather than a page load.
       2: {
-        title: 'How much?',
+        title: 'How much, and why?',
         amountLabel: 'Amount in euros',
         keypadLabel: 'Number keypad',
         remaining: 'Left in your account after this payment',
         tooMuch: 'That is more than you have in your account.',
         tooSmall: 'Please enter an amount above zero.',
-      },
-      3: {
-        title: 'Why are you sending this money?',
-        eitherOr: 'You only need to do one of these two: pick the closest one, or tell us in your own words.',
-        categoryLabel: 'Pick the closest one',
-        textLabel: 'Or tell us in your own words',
+        reasonLabel: 'Why are you sending this money?',
+        reasonSubLabel: 'In your own words. David sees this exactly as you write it.',
         textHelp: 'Please write at least 10 characters.',
-        optionalWords: 'You have picked a reason, so this is optional.',
-        needOne: 'Please pick the closest reason, or tell us in your own words.',
         vagueHint: 'A little more detail helps David understand the payment.',
       },
-      4: {
-        title: 'Safety check',
+      3: {
+        title: 'Safety questions',
         skippedTrusted: 'Skipped — this payee is on your trusted list.',
         intro: 'Three quick questions. Your answers go to David exactly as you give them.',
         q1: 'Did someone contact you first about this payment?',
@@ -103,13 +109,24 @@ export const COPY = {
         q3: 'Have you spoken to this person on a number you already had?',
         yes: 'Yes',
         no: 'No',
+        check: 'Check this payment',
       },
-      5: {
+      // Not a numbered step: it is what "Check this payment" leads to.
+      review: {
         title: 'Check and confirm',
         sendNow: 'Send now',
         askApprover: 'Ask David',
         askApproverHold: 'Ask David, then a 30-minute wait',
         blocked: 'This payment cannot be sent from here',
+        stoppedEyebrow: 'Stopped for checking',
+        doThisFirst: 'Do this first, before anything else',
+        hangUp:
+          'Hang up on whoever asked you for this. Wait five minutes, then ring David on a number you already have — not one from a message.',
+        ringNow: 'Ring David now',
+        askInApp: 'Ask David to check it in the app',
+        stopAndGoHome: 'Stop and go home',
+        nothingMoved: (amount: string, payee: string) =>
+          `You were about to send ${amount} to ${payee}. Nothing has moved, and nothing will until you decide.`,
       },
     },
   },
@@ -123,6 +140,15 @@ export const COPY = {
     } as Record<RiskBand, string>,
     bandIcon: { LOW: '✓', MEDIUM: '!', HIGH: '!!', CRITICAL: '⚠' } as Record<RiskBand, string>,
     senderHeading: 'What we noticed',
+    // Thirteen reasons are a wall. Ranked into three named groups they are a
+    // story she can follow — and nothing is hidden, only ordered: every reason
+    // stays available behind the disclosure below.
+    groups: {
+      told: '1 · What you were told',
+      contact: '2 · Who got in touch',
+      destination: '3 · Where the money would go',
+    },
+    everyDetail: (n: number) => `See every detail we checked (${n})`,
     approverHeading: 'Risk report',
     noReasons: 'Nothing unusual stood out.',
     mitigatorsGated:

@@ -104,3 +104,57 @@ export function senderReasons(assessment: RiskAssessment): RiskReason[] {
 export function senderReassurances(assessment: RiskAssessment): RiskReason[] {
   return assessment.reasons.filter((r) => !r.gated && r.points < 0);
 }
+
+// --- Ranking the sender's reasons (handoff §5.5) -----------------------------
+//
+// Thirteen reasons in a flat list are a wall, and a wall is skimmed. Folding
+// them into three named groups turns them into a story: what you were told,
+// who got in touch, where the money would go. Nothing is removed — the result
+// screen still offers every string behind a disclosure. This only ranks.
+//
+// Amount-and-pattern rules do not carry a story of their own, so they trail the
+// third group as one sentence rather than earning a heading.
+
+const GROUP_RULES: Record<SenderReasonGroupKey, readonly string[]> = {
+  // What she was told, and what she wrote down because of it.
+  told: ['R06', 'R07', 'R15', 'R08'],
+  // Who opened the conversation, and whether she checked back on her own number.
+  contact: ['R14', 'R16'],
+  // Where the money would actually land.
+  destination: ['R01', 'R02', 'R11', 'R12', 'R13', 'R17', 'R19'],
+};
+
+export type SenderReasonGroupKey = 'told' | 'contact' | 'destination';
+
+export type SenderReasonGroup = {
+  key: SenderReasonGroupKey;
+  reasons: RiskReason[];
+  /** Amount-and-pattern reasons, appended to the third group as a sentence. */
+  trailing: RiskReason[];
+};
+
+/**
+ * The sender's reasons, ranked into the three groups. Groups with nothing in
+ * them are dropped, so a payment that only tripped one rule shows one heading
+ * rather than three empty ones. Anything outside the named rule families lands
+ * in the third group's trailing sentence, which is where the amount-and-pattern
+ * rules (R03/R04/R05/R09/R10/R18) belong anyway.
+ */
+export function groupSenderReasons(assessment: RiskAssessment): SenderReasonGroup[] {
+  const reasons = senderReasons(assessment);
+  const groups: SenderReasonGroup[] = (
+    ['told', 'contact', 'destination'] as SenderReasonGroupKey[]
+  ).map((key) => ({
+    key,
+    reasons: reasons.filter((r) => GROUP_RULES[key].includes(r.ruleId)),
+    trailing: [],
+  }));
+
+  const named = new Set(Object.values(GROUP_RULES).flat());
+  const trailing = reasons.filter((r) => !named.has(r.ruleId));
+  // The trailing sentence belongs to "where the money would go" — it is about
+  // the shape of the payment, not about anyone she spoke to.
+  groups[2].trailing = trailing;
+
+  return groups.filter((g) => g.reasons.length > 0 || g.trailing.length > 0);
+}
